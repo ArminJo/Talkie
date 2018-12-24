@@ -1,0 +1,31 @@
+#######################################
+# Syntax Coloring Map for Talkie_new
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+Talkie	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+say	KEYWORD2
+ptrAddr	KEYWORD3
+sayQ	KEYWORD2
+isTalking	KEYWORD2
+wait	KEYWORD2
+stop	KEYWORD2
+terminate	KEYWORD2
+doNotUseUseInvertedOutput	KEYWORD2
+doNotUseNonInvertedOutput	KEYWORD2
+getNumberOfWords	KEYWORD2
+sayQDigit	KEYWORD2
+sayQNumber	KEYWORD2
+sayQFloat	KEYWORD2
+sayQVoltageMilliVolts	KEYWORD2
+sayQPause	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
