@@ -8,7 +8,7 @@
  *  Talkie is a speech library for Arduino.
  *  It can also run on 8 MHz ATmega with either FAST_8BIT_MODE defined and slightly reduces speech quality or timer0 (for millis()) disabled  which is default (or both).
  *
- *  The speech PWM output signal is at pin 3 (default) and/or 11.
+ *  The speech PWM output signal is at pin 3 and/or 11.
  *  If both outputs are used and speaker is connected between pin 3 and pin 11 you get increased volume.
  *  On a plain Arduino Timer 1 (16 bit - for Servo library) is used to fill in new values for the PWM at the sample rate of 8000Hz / 125us.
  *                     Timer 2 (8 bit - for Tone library) is used to generate the 62500Hz / 16us PWM with 8 bit resolution on pin 3 + 11.
@@ -366,7 +366,8 @@ void Talkie::initializeHardware() {
     TIMSK0 = 0; // // Tweak for 8 Mhz clock - must disable millis() interrupt
 #endif
     OCR1A = ((F_CPU + (FS / 2)) / FS) - 1;  // 'FS' Hz (w/rounding)
-    TIMSK1 = _BV(OCIE1A);                   // enable compare match interrupt
+    OCR1B = ((F_CPU + (FS / 2)) / FS) - 1;  // use the same value for register B
+    TIMSK1 = _BV(OCIE1B);                   // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #endif // (__AVR__)
 
@@ -460,7 +461,7 @@ int8_t Talkie::sayQ(const uint8_t * aWordDataAddress) {
 /*
  * Called every 125 microsecond / 8000 Hz
  */
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER1_COMPB_vect) {
     timerInterrupt();
 }
 

@@ -37,7 +37,7 @@ uint16_t readADCChannel(uint8_t aChannelNumber) {
     loop_until_bit_is_clear(ADCSRA, ADSC);
 
     // combine the two bytes
-    return (ADCH << 8) | ADCL;
+    return ADCL | (ADCH << 8);
 }
 
 #if defined(__AVR_ATmega32U4__)
@@ -47,10 +47,10 @@ uint16_t readADCChannel(uint8_t aChannelNumber) {
 #endif
 // computes VCC voltage using internal 1.1 reference
 float getVCCVoltage(void) {
-    // use AVCC with external capacitor at AREF pin as reference
+    // use VCC with external capacitor at AREF pin as reference
     readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX); // to switch the channel
-    delayMicroseconds(200); // wait for the value to settle. value must be > 100
-    float tVCC = readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX);
+    delayMicroseconds(400); // wait for the value to settle. value must be > 100 but to get the last bits value must be greater than 400
+    uint16_t tVCC = readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX);
     return ((1024 * 1.1) / tVCC);
 }
 

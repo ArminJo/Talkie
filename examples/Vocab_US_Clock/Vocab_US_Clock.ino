@@ -17,7 +17,7 @@ Talkie voice;
 void setup() {
 	voice.say(spc_GOOD);
 	voice.say(spc_MORNING);
-	voice.say(spc_PAUSE1);
+	voice.say(spPAUSE1);
 	voice.say(spc_THE);
 	voice.say(spc_TIME);
 	voice.say(spc_IS);
