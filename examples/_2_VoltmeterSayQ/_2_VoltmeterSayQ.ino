@@ -24,35 +24,8 @@
 #define VERSION_EXAMPLE "1.0"
 
 Talkie Voice;
-
-#define ADC_PRESCALE64   6 // 52 microseconds per ADC conversion at 16 MHz
-uint16_t readADCChannel(uint8_t aChannelNumber) {
-    ADMUX = aChannelNumber | (DEFAULT << REFS0); // DEFAULT = VCC
-
-//  ADCSRB = 0; // free running mode  - is default
-    // ADSC-StartConversion ADIF-Reset Interrupt Flag - NOT free running mode
-    ADCSRA = ((1 << ADEN) | (1 << ADSC) | (1 << ADIF) | ADC_PRESCALE64);
-
-// wait for single conversion to finish
-    loop_until_bit_is_clear(ADCSRA, ADSC);
-
-    // combine the two bytes
-    return ADCL | (ADCH << 8);
-}
-
-#if defined(__AVR_ATmega32U4__)
-#define ADC_1_1_VOLT_CHANNEL_MUX 0x1E
-#else
-#define ADC_1_1_VOLT_CHANNEL_MUX 0x0E
-#endif
-// computes VCC voltage using internal 1.1 reference
-float getVCCVoltage(void) {
-    // use VCC with external capacitor at AREF pin as reference
-    readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX); // to switch the channel
-    delayMicroseconds(400); // wait for the value to settle. value must be > 100 but to get the last bits value must be greater than 400
-    uint16_t tVCC = readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX);
-    return ((1024 * 1.1) / tVCC);
-}
+uint16_t readADCChannel(uint8_t aChannelNumber);
+float getVCCVoltage(void);
 
 void setup() {
     Serial.begin(115200);
@@ -89,3 +62,31 @@ void loop() {
     }
 }
 
+#define ADC_PRESCALE64   6 // 52 microseconds per ADC conversion at 16 MHz
+uint16_t readADCChannel(uint8_t aChannelNumber) {
+    ADMUX = aChannelNumber | (DEFAULT << REFS0); // DEFAULT = VCC
+
+//  ADCSRB = 0; // free running mode  - is default
+    // ADSC-StartConversion ADIF-Reset Interrupt Flag - NOT free running mode
+    ADCSRA = ((1 << ADEN) | (1 << ADSC) | (1 << ADIF) | ADC_PRESCALE64);
+
+// wait for single conversion to finish
+    loop_until_bit_is_clear(ADCSRA, ADSC);
+
+    // combine the two bytes
+    return ADCL | (ADCH << 8);
+}
+
+#if defined(__AVR_ATmega32U4__)
+#define ADC_1_1_VOLT_CHANNEL_MUX 0x1E
+#else
+#define ADC_1_1_VOLT_CHANNEL_MUX 0x0E
+#endif
+// computes VCC voltage using internal 1.1 reference
+float getVCCVoltage(void) {
+    // use VCC with external capacitor at AREF pin as reference
+    readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX); // to switch the channel
+    delayMicroseconds(400); // wait for the value to settle. value must be > 100 but to get the last bits value must be greater than 400
+    uint16_t tVCC = readADCChannel(ADC_1_1_VOLT_CHANNEL_MUX);
+    return ((1024 * 1.1) / tVCC);
+}

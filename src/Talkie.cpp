@@ -49,7 +49,7 @@
 #include "Talkie.h"
 
 // Enable this if you want to measure timing by toggling pin12 on an arduino
-#define MEASURE_TIMING
+//#define MEASURE_TIMING
 #ifdef MEASURE_TIMING
 #include "digitalWriteFast.h"
 #endif
