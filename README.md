@@ -1,6 +1,7 @@
 # Talkie
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://travis-ci.org/ArminJo/Talkie.svg?branch=master)](https://travis-ci.org/ArminJo/Talkie)
 
 ## Speech library for Arduino
 The original version can be found [here](https://github.com/going-digital/Talkie)

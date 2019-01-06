@@ -18,12 +18,30 @@
 //            (Only this album contains the original a capella version)
 
 #include "Talkie.h"
+
+#if defined(__AVR_ATmega32U4__)
+// not enough memory for the data of the song left on ATmega32U4 with USB software
+#include "Vocab_US_TI99.h"
+#else
 #include "Vocab_Toms_Diner.h"
+#endif
 
 Talkie voice;
 
 void setup() {
+#if !defined(__AVR_ATmega32U4__)
   voice.say(spDINER);
+#else
+  voice.say(spt_NICE_TRY);
+  voice.say(spt_WE);
+  voice.say(spt_NEED);
+  voice.say(spt_MORE);
+  voice.say(spt_MEMORY);
+  voice.say(spt_THAN);
+  voice.say(spt_WE);
+  voice.say(spt_HAVE);
+#endif
 }
+
 void loop() {
 }
