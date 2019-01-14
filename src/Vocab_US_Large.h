@@ -18,6 +18,8 @@
 #include <avr/pgmspace.h>
 
 // ROM VM61005
+// In this file the original order of ROMs is kept.
+// The .c file contains the sorted vocabulary.
 extern const uint8_t sp5_ATU[] PROGMEM;
 extern const uint8_t sp5_FSS[] PROGMEM;
 extern const uint8_t sp5_ILS[] PROGMEM;
