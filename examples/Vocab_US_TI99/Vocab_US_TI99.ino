@@ -14,6 +14,10 @@
 //
 // Note that some words/letters are repeated with different spellings.
 // eg. 'TWO', 'TO', 'TOO' or 'YOU' and 'U'
+//
+// Sound is output on digital pin 3 and/or 11. It can drive headphones directly, or add a simple audio amplifier to drive a loudspeaker.
+
+#include <Arduino.h>
 
 #include "Talkie.h"
 #include "Vocab_US_TI99.h"
@@ -21,6 +25,11 @@
 Talkie voice;
 
 void setup() {
+//    voice.doNotUseUseInvertedOutput();
+#if defined(CORE_TEENSY)
+    pinMode(5, OUTPUT);
+    digitalWrite(5, HIGH); //Enable Amplified PROP shield
+#endif
     voice.say(spt_HELLO);
     voice.say(spt_THESE);
     voice.say(spt_ARE);
@@ -28,5 +37,6 @@ void setup() {
     voice.say(spt_TEXAS_INSTRUMENTS);
     voice.say(spt_WORDS);
 }
+
 void loop() {
 }

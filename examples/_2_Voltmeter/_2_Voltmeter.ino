@@ -12,6 +12,10 @@
 // building the number from short phrases,
 //
 // Connect a sensor to Analog 0, and this program will read the sensor voltage.
+//
+// Sound is output on digital pin 3 and/or 11. It can drive headphones directly, or add a simple audio amplifier to drive a loudspeaker.
+
+#include <Arduino.h>
 
 #include "Talkie.h"
 #include "Vocab_US_Large.h"
@@ -79,8 +83,14 @@ void sayNumber(long n) {
   }
 }
 void setup() {
+//    voice.doNotUseUseInvertedOutput();
+#if defined(CORE_TEENSY)
+    pinMode(5, OUTPUT);
+    digitalWrite(5, HIGH); //Enable Amplified PROP shield
+#endif
   Serial.begin(9600);
 }
+
 void loop() {
   int voltage = analogRead(0) * 5.000 / 1.023;
   Serial.println(voltage);

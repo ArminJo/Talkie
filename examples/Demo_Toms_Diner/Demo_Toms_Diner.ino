@@ -16,9 +16,12 @@
 //
 //     or look for 'Solitude Standing' on your preferred music store.
 //            (Only this album contains the original a capella version)
+//
+// Sound is output on digital pin 3 and/or 11. It can drive headphones directly, or add a simple audio amplifier to drive a loudspeaker.
+
+#include <Arduino.h>
 
 #include "Talkie.h"
-
 #if defined(__AVR_ATmega32U4__)
 // not enough memory for the data of the song left on ATmega32U4 with USB software
 #include "Vocab_US_TI99.h"
@@ -29,17 +32,23 @@
 Talkie voice;
 
 void setup() {
+//    voice.doNotUseUseInvertedOutput();
+#if defined(CORE_TEENSY)
+    pinMode(5, OUTPUT);
+    digitalWrite(5, HIGH); //Enable Amplified PROP shield
+#endif
+
 #if !defined(__AVR_ATmega32U4__)
-  voice.say(spDINER);
+    voice.say(spDINER);
 #else
-  voice.say(spt_NICE_TRY);
-  voice.say(spt_WE);
-  voice.say(spt_NEED);
-  voice.say(spt_MORE);
-  voice.say(spt_MEMORY);
-  voice.say(spt_THAN);
-  voice.say(spt_WE);
-  voice.say(spt_HAVE);
+    voice.say(spt_NICE_TRY);
+    voice.say(spt_WE);
+    voice.say(spt_NEED);
+    voice.say(spt_MORE);
+    voice.say(spt_MEMORY);
+    voice.say(spt_THAN);
+    voice.say(spt_WE);
+    voice.say(spt_HAVE);
 #endif
 }
 

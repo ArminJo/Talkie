@@ -37,6 +37,12 @@
 Talkie voice;
 
 void setup() {
+//        voice.doNotUseUseInvertedOutput();
+    #if defined(CORE_TEENSY)
+        pinMode(5, OUTPUT);
+        digitalWrite(5, HIGH); //Enable Amplified PROP shield
+    #endif
+
     voice.say(sp3_WIND);
     voice.say(sp3_NORTHEAST);
     voice.say(sp3_GUSTING_TO);
