@@ -2,7 +2,7 @@
 // Copyright 2011 Peter Knight
 // This code is released under GPLv2 license.
 //
-// Armin Joachimsmeyer 11/2018 converted to .c and .h files
+// Armin Joachimsmeyer 11/2018 converted to .c and .h files and made them unique.
 //
 // A female voice with an American accent
 //
