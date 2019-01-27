@@ -34,6 +34,9 @@
 
 #include "TalkieUtils.h"
 
+#if defined(__arm__)
+#include <avr/dtostrf.h>
+#endif
 
 int8_t sayQDigit(Talkie * aVoice, char aDigit) {
     return sayQNumber(aVoice, aDigit - '0');

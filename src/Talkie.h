@@ -5,6 +5,7 @@
  *
  *  SUMMARY
  *  Talkie is a speech library for Arduino.
+ *  Output is at pin 3 + 11
  *
  *  Copyright (C) 2018  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -32,9 +33,8 @@
 #include <inttypes.h>
 
 #if defined(__AVR__)
-#define TIMING_PIN 12
 #if !defined(__AVR_ATmega32U4__) && !defined(TCCR2A)
-#error "Sorry, when using an AVR chip, Talkie requires Timer2.  This board doesn't have it."
+#error "Sorry, when using an AVR chip, Talkie requires Timer2.  This board doesn't have one."
 #endif
 #if F_CPU < 8000000L
 #error "F_CPU must be at least 8 MHz"
@@ -43,7 +43,7 @@
 
 #define FIFO_BUFFER_SIZE     24 // 24 sets of 4 bytes plus added queue indexes is about 100 added bytes.
 
-#define TALKIE_USE_PIN 0xFF // use pin as output, but pin number is not yet specified
+#define TALKIE_USE_PIN_FLAG 0xFF // Flag to signal, that pin should be used as output, but pin number is not yet filled in, since it depends of board type.
 
 class Talkie {
 public:
@@ -63,7 +63,7 @@ public:
     uint8_t InvertedOutputPin;    // =0 Disable output. =0xFF Enable output. On Arduino enables pin 11 as inverted PWM output to increase the volume
     const uint8_t * volatile WordDataPointer; // Pointer to word data array !!! Must be volatile, since it is accessed also by ISR
     uint8_t WordDataBit; // [0-7] bit number of next bit in array bitstream
-    volatile bool isTalkingFlag = false;
+    volatile bool isTalkingFlag;
     uint8_t getNumberOfWords(); // Returns 0 if nothing to play, otherwise the number of the queued items plus the one which is active.
     bool isTalking();
     uint8_t getBits(uint8_t bits);
@@ -76,7 +76,7 @@ public:
 private:
     // FIFO queue for sayQ
     const uint8_t * FIFOBuffer[FIFO_BUFFER_SIZE];
-    // not needed to specify the next 2 variables as volatile, since it code using them is synchronized by cli() and sei().
+    // not needed to specify the next 2 variables as volatile, since it code using them is guarded with noInterrupts() and interrupts()
     uint8_t back; // index of last voice init on setup = 0
     uint8_t front; // index of next voice init on setup = 0
 
