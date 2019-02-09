@@ -28,9 +28,8 @@ float getVCCVoltage(void);
 
 void setup() {
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__)
-    while (!Serial); // wait until serial stream is open
-#endif
+    while (!Serial); //delay for Leonardo
+    // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
 
     // for LED
