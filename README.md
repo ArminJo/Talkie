@@ -15,6 +15,7 @@ Youtube Demonstration of Talkie Voltmeter example
 - Improved code so Talkie now runs on **8MHz** Arduino (with millis() interrupt disabled while talking).
 - Fixed the ISR_RATIO Bug for plain Arduino.
 - Added utility functions sayQNumber(), sayQFloat(), sayQVoltageMilliVolts() extracted from the examples.
+- Inverted output at pin 11 is enabled by default to increase volume for direct attached piezo or speaker.
 - Added comments and did refactoring to better understand the functionality.
 - Added compatibility to Arduino Tone library by stopping timer1 interrupts at every end of speech.
 - Extracted initializeHardware() and terminateHardware() functions for easy adapting to other platforms.
@@ -24,12 +25,12 @@ Youtube Demonstration of Talkie Voltmeter example
   - **ARM0** (but not tested) as found on the **SAMD**, **Teensy** and **Particle** boards.
 
 ## Hints
-- Connect the speaker to digital pin 3 and 11 of Arduino. 
+- Connect the speaker to digital pin 3 and 11 of Arduino. They are enabled as non inverted and inverted outputs by default to increase volume for direct attached piezo or speaker. 
 - As speaker I use the speakers from old earphones or headphones, which have ca. 32 Ohm, directly without a series resistor. The headphone speaker tend to be much louder, especially when they stay in their original housings.
 - The Library uses Timer 1 and Timer 2, so libraries like Tone, Servo, analogWrite(), and some other libraries cannot be used while speaking.
 - After a call to say... you can use tone() again.
 - To use Servo write() after a call to say... you must detach() and attach() the servo before first write() in order to initialize the timer again for Servo.
-- Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it :-( )
+- Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
 
 ## Own vocabulary
 To create LPC data you can use [Qboxpro](http://ftp.whtech.com/pc%20utilities/qboxpro.zip), an unsupported old Windows application running under XP, which can produce Talkie compatible data streams. The missing BWCC.DLL (Borland Windows Custom Control Library) can be found e.g. [here](http://www.download-dll.com/dll-BWCC.dll.html).
@@ -45,11 +46,19 @@ Another way to generate the LPC data is to use the pyton script at https://githu
 ### Schematic for voltmeter example
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)
 
-## Travis CI
+# Revision History
+### Version 1.0.0
+Initial Arduino library version
 
+## Travis CI
 The Talkie library examples are built on Travis CI for the following boards:
 
 - Arduino Uno
 - Arduino Leonardo
 - Arduino Mega 2560
 - Arduino cplayClassic
+
+## Requests for modifications / extensions
+Please write me a PM including your motivation/problem if you need a modification or an extension.
+
+#### If you find this library useful, please give it a star.

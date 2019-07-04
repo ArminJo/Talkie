@@ -59,8 +59,8 @@ public:
     void terminateHardware();
     void doNotUseUseInvertedOutput(bool aDoNotUseInvertedOutput = true);
     void doNotUseNonInvertedOutput(bool aDoNotUseNonInvertedOutput = true);
-    uint8_t NonInvertedOutputPin; // =0 Disable output. =0xFF Enable output. On Arduino enables pin 3 (Talkie default) as PWM output
-    uint8_t InvertedOutputPin;    // =0 Disable output. =0xFF Enable output. On Arduino enables pin 11 as inverted PWM output to increase the volume
+    uint8_t NonInvertedOutputPin; // 0xFF -> Enable output (default). 0 -> Disable output. On Arduino enables pin 3 (Talkie default) as PWM output
+    uint8_t InvertedOutputPin;    // 0xFF -> Enable output (default). 0 -> Disable output. On Arduino enables pin 11 as inverted PWM output to increase the volume
     const uint8_t * volatile WordDataPointer; // Pointer to word data array !!! Must be volatile, since it is accessed also by ISR
     uint8_t WordDataBit; // [0-7] bit number of next bit in array bitstream
     volatile bool isTalkingFlag;

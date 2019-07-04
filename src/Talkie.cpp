@@ -6,7 +6,7 @@
  *
  *  SUMMARY
  *  Talkie is a speech library for Arduino.
- *  Output is at pin 3 + 11
+ *  Output is at pin 3 + 11 which are enabled by default
  *  It can also run on 8 MHz ATmega with either FAST_8BIT_MODE defined and slightly reduces speech quality or timer0 (for millis()) disabled  which is default (or both).
  *
  *  The speech PWM output signal is at pin 3 and/or 11.
@@ -111,6 +111,9 @@ static uint16_t ISRCounterToNextData = 0;
 #endif
 
 Talkie::Talkie() { // @suppress("Class members should be properly initialized")
+    /*
+     * Enable non inverted and inverted output by default
+     */
     NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
     InvertedOutputPin = TALKIE_USE_PIN_FLAG;
     isTalkingFlag = false;
