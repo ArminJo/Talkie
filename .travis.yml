@@ -19,5 +19,7 @@ script:
 - build_platform mega2560
 notifications:
   email:
+    recipients:
+      - armin.arduino@gmail.com  
     on_success: change
     on_failure: always

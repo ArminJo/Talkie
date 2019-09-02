@@ -46,6 +46,12 @@ Another way to generate the LPC data is to use the pyton script at https://githu
 ### Schematic for voltmeter example
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)
 
+# Modifying library properties
+To access the Arduino library files from a sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.<br/>
+Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
+The library files itself are located in the `src` sub-directory.<br/>
+If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
+
 # Revision History
 ### Version 1.0.0
 Initial Arduino library version

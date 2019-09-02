@@ -36,7 +36,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
- *  Additions: 11/2018 Armin Joachimsmeyer
+ * Version 1.0.1 09/2019
+ * - Added SPI compatibility (after speaking do not reset pin 11 to input if SPI detected).
+ * Version 1.0.0 11/2018
  *  - Fix the ISR_RATIO Bug for plain Arduino
  *  - Added a lot of comments and do refactoring to better understand the functionality
  *  - Added stopping timer1 interrupts at every end of speech to free resources for usage of Arduino tone library
@@ -58,11 +60,14 @@
 #define TIMING_PIN 12
 #endif
 
-// if you do not use the Tone library, then activating can save up to 844 byte program size :-)
+// If you do not use the Tone library, then activating can save up to 844 byte program size :-)
 //#define NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
 
+// If you do not use a SPI library, then activating can save 8 byte program size
+//#define NO_COMPATIBILITY_FOR_SPI_NEEDED
+
 /*
- * use 8bit coefficients K1 and K2.
+ * Use 8bit coefficients K1 and K2.
  * Saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega
  * has almost the same quality, except of a few "dropouts" e.g. in the word "thousand"
  */
@@ -423,11 +428,19 @@ void Talkie::terminateHardware() {
      * pinMode(3|11, INPUT) avoids the click at the end, if speaker is coupled by a capacitance.
      */
     if (NonInvertedOutputPin) {
-        // force initializing of tone library, next time tone() is called.
+
+#ifndef NO_COMPATIBILITY_FOR_SPI_NEEDED
+        // Reset pin 11 to input only if no active SPI detected - needs 8 byte Flash
+        if (!(SPCR &  _BV(SPE))) {
+#endif
+            // force initializing of tone library, next time tone() is called.
 #ifdef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
-        pinMode(NonInvertedOutputPin, INPUT); // tone needs this as output
+            pinMode(NonInvertedOutputPin, INPUT); // tone needs this as output
 #else
-        noTone(NonInvertedOutputPin);
+            noTone(NonInvertedOutputPin);
+#endif
+#ifndef NO_COMPATIBILITY_FOR_SPI_NEEDED
+        }
 #endif
     }
     if (InvertedOutputPin) {
@@ -634,50 +647,50 @@ void TC5_Handler(void) __attribute__ ((weak, alias("timerInterrupt")));
  */
 static void setNextSynthesizerData() {
 // 396 byte compiled
-    uint8_t energy = sPointerToTalkieForISR->getBits(4);
+uint8_t energy = sPointerToTalkieForISR->getBits(4);
 // Read speech data, processing the variable size frames.
-    if (energy == 0) {
+if (energy == 0) {
 // Energy = 0: rest frame
-        synthEnergy = 0;
-    } else if (energy == 0xf) { // Energy = 15: stop frame. Silence the synthesizer and get new data.
-        synthEnergy = 0;
-        synthK1 = 0;
-        synthK2 = 0;
-        synthK3 = 0;
-        synthK4 = 0;
-        synthK5 = 0;
-        synthK6 = 0;
-        synthK7 = 0;
-        synthK8 = 0;
-        synthK9 = 0;
-        synthK10 = 0;
+    synthEnergy = 0;
+} else if (energy == 0xf) { // Energy = 15: stop frame. Silence the synthesizer and get new data.
+    synthEnergy = 0;
+    synthK1 = 0;
+    synthK2 = 0;
+    synthK3 = 0;
+    synthK4 = 0;
+    synthK5 = 0;
+    synthK6 = 0;
+    synthK7 = 0;
+    synthK8 = 0;
+    synthK9 = 0;
+    synthK10 = 0;
 
 // Get next word from FIFO
-        sPointerToTalkieForISR->setPtr(sPointerToTalkieForISR->FIFOPopFront());
+    sPointerToTalkieForISR->setPtr(sPointerToTalkieForISR->FIFOPopFront());
 
-    } else {
-        uint8_t repeat;
-        synthEnergy = pgm_read_byte(&tmsEnergy[energy]);
-        repeat = sPointerToTalkieForISR->getBits(1);
-        synthPeriod = pgm_read_byte(&tmsPeriod[sPointerToTalkieForISR->getBits(6)]); // 11 bits up to here
+} else {
+    uint8_t repeat;
+    synthEnergy = pgm_read_byte(&tmsEnergy[energy]);
+    repeat = sPointerToTalkieForISR->getBits(1);
+    synthPeriod = pgm_read_byte(&tmsPeriod[sPointerToTalkieForISR->getBits(6)]); // 11 bits up to here
 // A repeat frame uses the last coefficients
-        if (!repeat) {
-            // All frames use the first 4 coefficients
-            synthK1 = pgm_read_word(&tmsK1[sPointerToTalkieForISR->getBits(5)]);
-            synthK2 = pgm_read_word(&tmsK2[sPointerToTalkieForISR->getBits(5)]);
-            synthK3 = pgm_read_byte(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
-            synthK4 = pgm_read_byte(&tmsK4[sPointerToTalkieForISR->getBits(4)]);        // 29 bits up to here
-            if (synthPeriod) {
-                // Voiced frames use 6 extra coefficients.
-                synthK5 = pgm_read_byte(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
-                synthK6 = pgm_read_byte(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
-                synthK7 = pgm_read_byte(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
-                synthK8 = pgm_read_byte(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
-                synthK9 = pgm_read_byte(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
-                synthK10 = pgm_read_byte(&tmsK10[sPointerToTalkieForISR->getBits(3)]);        // 50 bits up to here
-            }
+    if (!repeat) {
+        // All frames use the first 4 coefficients
+        synthK1 = pgm_read_word(&tmsK1[sPointerToTalkieForISR->getBits(5)]);
+        synthK2 = pgm_read_word(&tmsK2[sPointerToTalkieForISR->getBits(5)]);
+        synthK3 = pgm_read_byte(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
+        synthK4 = pgm_read_byte(&tmsK4[sPointerToTalkieForISR->getBits(4)]);        // 29 bits up to here
+        if (synthPeriod) {
+            // Voiced frames use 6 extra coefficients.
+            synthK5 = pgm_read_byte(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
+            synthK6 = pgm_read_byte(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
+            synthK7 = pgm_read_byte(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
+            synthK8 = pgm_read_byte(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
+            synthK9 = pgm_read_byte(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
+            synthK10 = pgm_read_byte(&tmsK10[sPointerToTalkieForISR->getBits(3)]);        // 50 bits up to here
         }
     }
+}
 }
 
 #if defined(__arm__) && !defined(CORE_TEENSY)
