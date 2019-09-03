@@ -44,10 +44,12 @@
 #define FIFO_BUFFER_SIZE     24 // 24 sets of 4 bytes plus added queue indexes is about 100 added bytes.
 
 #define TALKIE_USE_PIN_FLAG 0xFF // Flag to signal, that pin should be used as output, but pin number is not yet filled in, since it depends of board type.
+#define TALKIE_DO_NOT_USE_PIN_FLAG 0x00 // As pin number is initially != 0xFF, this is not really needed at startup
 
 class Talkie {
 public:
     Talkie();
+    Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);
     void say(const uint8_t * aWordDataAddress); // Blocking version
     int8_t sayQ(const uint8_t * aWordDataAddress); // Queuing version. Returns free space in FIFO
     void wait(); // wait for sayQ to end

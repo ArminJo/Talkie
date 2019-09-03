@@ -60,11 +60,8 @@
 #define TIMING_PIN 12
 #endif
 
-// If you do not use the Tone library, then activating can save up to 844 byte program size :-)
+// If you do not use the Tone library, then activating can save up to 844 bytes program size :-)
 //#define NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
-
-// If you do not use a SPI library, then activating can save 8 byte program size
-//#define NO_COMPATIBILITY_FOR_SPI_NEEDED
 
 /*
  * Use 8bit coefficients K1 and K2.
@@ -121,6 +118,19 @@ Talkie::Talkie() { // @suppress("Class members should be properly initialized")
      */
     NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
     InvertedOutputPin = TALKIE_USE_PIN_FLAG;
+
+    isTalkingFlag = false;
+    sPointerToTalkieForISR = this;
+}
+
+Talkie::Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin) { // @suppress("Class members should be properly initialized")
+    if (aUseNonInvertedOutputPin) {
+        NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
+    }
+    if (aUseInvertedOutputPin) {
+        InvertedOutputPin = TALKIE_USE_PIN_FLAG;
+    }
+
     isTalkingFlag = false;
     sPointerToTalkieForISR = this;
 }
@@ -198,7 +208,7 @@ void Talkie::FIFOPushBack(const uint8_t *aAddress) {
  * returns next element from queue or 0
  */
 const uint8_t * Talkie::FIFOPopFront() {
-// 56 byte compiled
+// 56 bytes compiled
     const uint8_t *addr = 0;    // returns 0 if empty.
     if (free < FIFO_BUFFER_SIZE) {
         free++;
@@ -257,7 +267,7 @@ void Talkie::resetFIFO() {
 }
 
 /*
- * On Arduino enables pin 11 as inverted PWM output to increase the volume
+ * On Arduino disables/enables pin 11 as inverted PWM output ( in order to increase the volume, if speaker is attached between 3 and 11)
  */
 void Talkie::doNotUseUseInvertedOutput(bool aDoNotUseInvertedOutput) {
     if (aDoNotUseInvertedOutput) {
@@ -268,11 +278,11 @@ void Talkie::doNotUseUseInvertedOutput(bool aDoNotUseInvertedOutput) {
 }
 
 /*
- * On Arduino disables pin 3 (Talkie default) as PWM output
+ * On Arduino disables/enables pin 3 (Talkie default) as PWM output
  */
 void Talkie::doNotUseNonInvertedOutput(bool aDoNotUseNonInvertedOutput) {
     if (aDoNotUseNonInvertedOutput) {
-        NonInvertedOutputPin = 0;
+        NonInvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG;
     } else {
         NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
     }
@@ -285,7 +295,7 @@ void Talkie::initializeHardware() {
 #if defined(__AVR_ATmega32U4__) // Use Timer 4 instead of Timer 2
 #if defined(ARDUINO_AVR_CIRCUITPLAY) || defined(ARDUINO_AVR_PROMICRO)
 // Adafruit Circuit Playground Classic or Sparkfun Pro Micro board. The first does not need inverted output, the latter does not connect it.
-// Cannot be used on plain Leonardos since inverted output is connected to internal led.
+// Cannot be used on plain Leonardos because inverted output is connected to internal led.
     NonInvertedOutputPin = 5;// D5 / PC6 / !OC4A
     InvertedOutputPin = 0;// disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
@@ -428,24 +438,19 @@ void Talkie::terminateHardware() {
      * pinMode(3|11, INPUT) avoids the click at the end, if speaker is coupled by a capacitance.
      */
     if (NonInvertedOutputPin) {
-
-#ifndef NO_COMPATIBILITY_FOR_SPI_NEEDED
-        // Reset pin 11 to input only if no active SPI detected - needs 8 byte Flash
-        if (!(SPCR &  _BV(SPE))) {
-#endif
-            // force initializing of tone library, next time tone() is called.
+        // Reset pin 11 to input only if no active SPI detected
+        if (!(SPCR & _BV(SPE))) {
 #ifdef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
-            pinMode(NonInvertedOutputPin, INPUT); // tone needs this as output
+            pinMode(NonInvertedOutputPin, INPUT); // As tone needs this as output, disconnect only if no compatibility needed
 #else
+            // force initializing of tone library, next time tone() is called.
             noTone(NonInvertedOutputPin);
 #endif
-#ifndef NO_COMPATIBILITY_FOR_SPI_NEEDED
         }
-#endif
     }
     if (InvertedOutputPin) {
 #ifdef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
-        pinMode(InvertedOutputPin, INPUT); // tone needs this as output
+        pinMode(InvertedOutputPin, INPUT); // As tone needs this as output, disconnect only if no compatibility needed
 #else
         noTone(InvertedOutputPin);
 #endif
@@ -468,7 +473,7 @@ int8_t Talkie::sayQ(const uint8_t * aWordDataAddress) {
         stop();
     } else {
         noInterrupts();
-        // disable Interrupt since ptrAddr is also modified by ISR. This avoids race conditions.
+        // disable Interrupt because ptrAddr is also modified by ISR. This avoids race conditions.
         if (isTalkingFlag) {
             /*
              *  Word synthesizer still active -> queue this aWordDataAddress when there is room in FIFO
@@ -560,7 +565,7 @@ void timerInterrupt() {
     }
 
 // Lattice filter forward path -> fill temporary variables
-// rescale by shifting >> 7 since we have signed values here (for unsigned it would need >> 8)
+// rescale by shifting >> 7 because we have signed values here (for unsigned it would need >> 8)
     u9 = u10 - (((int16_t) synthK10 * x9) >> 7);
     u8 = u9 - (((int16_t) synthK9 * x8) >> 7);
     u7 = u8 - (((int16_t) synthK8 * x7) >> 7);
