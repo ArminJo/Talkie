@@ -20,17 +20,28 @@ YouTube Demonstration of Talkie Voltmeter example
 - Added compatibility to Arduino Tone library by stopping timer1 interrupts at every end of speech.
 - Extracted initializeHardware() and terminateHardware() functions for easy adapting to other platforms.
 - Currently supporting:
-  - **ATmega328** as found on the **Uno** and **Nano** bords.
+  - **ATmega328** as found on the **Uno** and **Nano** boards.
+  - **ATmega2560** as found on the **MEGA 2560** board.
   - **ATmega32U4** as found on the **Leonardo** and **CircuitPlaygound** boards.
   - **ARM0** (but not tested) as found on the **SAMD**, **Teensy** and **Particle** boards.
+  
+## Output pins for different ATmegas
+ - ATmega328 (Uno and Nano): non inverted at pin 3, inverted at pin 11.
+ - ATmega2560: non inverted at pin 6, inverted at pin 7.
+ - ATmega32U4 (Leonardo): non inverted at pin 10, inverted at pin 9.
+ - ATmega32U4 (CircuitPlaygound): only non inverted at pin 5.
+
+## Timer usage
+**Timer 1** (Servo timer) is used at all ATmegas for updating voice output data at 8 kHz.
+**Timer 2** (Tone timer) on ATmega328 and **Timer 4** on ATmega2560 + ATmega32U4 is used to generate the 8 bit PWM output.
 
 ## Hints
-- **Connect the speaker between digital pin 3 and 11 of Arduino**. They are enabled as non inverted and inverted outputs by default to **increase volume** for direct attached piezo or speaker.
+- As **default** both inverted and not inverted outputs are enabled to **increase volume** if speaker is attached between them.
 - I use the speakers from old earphones or headphones, which have approximately 32 Ohm, directly without a series resistor. The headphone speaker tend to be much louder, especially when they stay in their original housings.
-- The library uses Timer 1 and Timer 2, so libraries like Tone, Servo, analogWrite(), and some other libraries cannot be used while speaking.
+- The library uses Timer 1 and Timer 2 on ATmega328, so libraries like Tone, Servo, analogWrite(), and some other libraries cannot be used while speaking.
 - After a call to say... you can use tone() again.
 - To use Servo write() after a call to say... you must detach() and attach() the servo before first write() in order to initialize the timer again for Servo.
-- If you want to use SPI functions **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseUseInvertedOutput();`.
+- If you want to use **SPI** functions on ATmega328 **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseUseInvertedOutput();`.
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
 
 ## Own vocabulary
@@ -54,9 +65,11 @@ The library files itself are located in the `src` sub-directory.<br/>
 If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
 
 # Revision History
+### Version 1.0.2
+- ATmega2560 supported and tested
 ### Version 1.0.1
 - Added SPI compatibility by not resetting pin 11 to input if SPI is detected
-- Added new constructor Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);
+- Added new constructor `Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);`
 ### Version 1.0.0
 - Initial Arduino library version
 

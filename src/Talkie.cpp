@@ -6,17 +6,22 @@
  *
  *  SUMMARY
  *  Talkie is a speech library for Arduino.
- *  Output is at pin 3 + 11 which are enabled by default
- *  It can also run on 8 MHz ATmega with either FAST_8BIT_MODE defined and slightly reduces speech quality or timer0 (for millis()) disabled  which is default (or both).
+ *  The analog output value is created by an 8 bit PWM, the sample rate is 8kHz.
+ *  On a plain ATmega, output is at pin 3 + 11 (of Timer 2) which are both enabled by default.
+ *  It can also run on 8 MHz ATmega with either FAST_8BIT_MODE defined and slightly reduces speech quality or timer0 (for millis()) disabled  which is default.
  *
- *  The speech PWM output signal is at pin 3 and/or 11.
- *  If both outputs are used and speaker is connected between pin 3 and pin 11 you get increased volume.
- *  On a plain Arduino Timer 1 (16 bit - for Servo library) is used to fill in new values for the PWM at the sample rate of 8000Hz / 125us.
- *                     Timer 2 (8 bit - for Tone library) is used to generate the 62500Hz / 16us PWM with 8 bit resolution on pin 3 + 11.
+ *  You get increased volume if you use both outputs and connect speaker between non inverted (3) and inverted (11) output pin.
  *
- *  On ATmega32U4 Timer 4 for 200kHz / 5us PWM at pin 9 / PB5 & 10 /PB6 for Leonardo board
- *      at pin 5 / PC6 for Adafruit Circuit Playground Classic or Sparkfun Pro Micro board
- *      at pin 6 / PD7 for Esplora board
+ *  Timer 1 (16 bit - for Servo library) is used to fill in new values for the PWM at the sample rate of 8000Hz / 125us.
+ *
+ *  On a plain Arduino: Timer 2 (8 bit - for Tone library) is used to generate the 62500Hz / 16us PWM with 8 bit resolution on pin 3/PD3/OC2B + 11/PB3/OC2A.
+ *
+ *  On ATmega2560: Timer 4 is used to generate the 62500Hz / 16us PWM with 8 bit resolution on pin 6/PH3/OC4A + 7/PH4/OC4B.
+ *
+ *  On ATmega32U4: Timer 4 for 200kHz / 5us PWM at pin 9/PB5/!OC4B + 10/PB6/OC4B for Leonardo board
+ *                                              at pin 5/PC6/!OC4A for Adafruit Circuit Playground Classic or Sparkfun Pro Micro board
+ *                                              at pin 6/PD7/OC4D for Esplora board
+ *
  *
  *  Copyright (C) 2018  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
@@ -36,6 +41,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
+ * Version 1.0.2 09/2019
+ * - ATmega2560 supported and tested
  * Version 1.0.1 09/2019
  * - Added SPI compatibility (after speaking do not reset pin 11 to input if SPI detected).
  * Version 1.0.0 11/2018
@@ -288,35 +295,38 @@ void Talkie::doNotUseNonInvertedOutput(bool aDoNotUseNonInvertedOutput) {
     }
 }
 
+/*
+ * Pin numbers must only used here!
+ */
 void Talkie::initializeHardware() {
 // Enable the speech system whenever say() is called.
 #if defined(__AVR__)
-#define _8_BIT_OUTPUT // 8 bit PWM
+#define _8_BIT_OUTPUT // Use 8 bit PWM
 #if defined(__AVR_ATmega32U4__) // Use Timer 4 instead of Timer 2
 #if defined(ARDUINO_AVR_CIRCUITPLAY) || defined(ARDUINO_AVR_PROMICRO)
 // Adafruit Circuit Playground Classic or Sparkfun Pro Micro board. The first does not need inverted output, the latter does not connect it.
 // Cannot be used on plain Leonardos because inverted output is connected to internal led.
-    NonInvertedOutputPin = 5;// D5 / PC6 / !OC4A
-    InvertedOutputPin = 0;// disable InvertedOutputPin
+    NonInvertedOutputPin = 5; // D5/PC6/!OC4A
+    InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
-    TCCR4A = _BV(COM4A0) | _BV(PWM4A);// Clear on match, PWMA on, OC4A / PC7 & !OC4A / PC6 connected
+    TCCR4A = _BV(COM4A0) | _BV(PWM4A); // Clear on match, PWMA on, OC4A/PC7 & !OC4A/PC6 connected
 #elif defined(ARDUINO_AVR_ESPLORA)
-    NonInvertedOutputPin = 6; // Only D6 / PD7 / OC4D connected to Speaker
-    InvertedOutputPin = 0;// disable InvertedOutputPin
+    NonInvertedOutputPin = 6; // Only D6/PD7/OC4D connected to Speaker
+    InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4C = _BV(COM4D1) |_BV(PWM4D);//
 #else
 // Leonardo, Lilypad USB, FLORA, TEENSY
-    NonInvertedOutputPin = 10;// D10 / OC4B / PB6
+    NonInvertedOutputPin = 10; // D10/OC4B/PB6
     pinMode(NonInvertedOutputPin, OUTPUT);
     if (InvertedOutputPin) {
         // use both output
-        InvertedOutputPin = 9;// D9 / !OC4B / PB5
+        InvertedOutputPin = 9; // D9/!OC4B/PB5
         pinMode(InvertedOutputPin, OUTPUT);
-        TCCR4A = _BV(COM4B0) | _BV(PWM4B);// Clear on match, PWMA on, OC4A & !OC4A connected
+        TCCR4A = _BV(COM4B0) | _BV(PWM4B); // Clear on match, PWMA on, OC4A & !OC4A connected
     } else {
         // use only non Inverted output
-        TCCR4A = _BV(COM4B1) | _BV(PWM4B);// Clear on match, PWMA on, OC4A connected
+        TCCR4A = _BV(COM4B1) | _BV(PWM4B); // Clear on match, PWMA on, OC4A connected
     }
 #endif // ATmega32U4 flavors
 
@@ -331,9 +341,25 @@ void Talkie::initializeHardware() {
     OCR4C = 255;// TOP
     OCR4A = 127;// 50% duty to start
     OCR4B = 127;// 50% duty to start
-#else
+
+#elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+    TCCR4A = _BV(WGM40); // Fast PWM 8 Bit
+    TCCR4B = _BV(WGM42) | _BV(CS40);  // Fast PWM 8 Bit, direct clock
+
+    if (NonInvertedOutputPin) {
+        NonInvertedOutputPin = 6; // OC4A
+        pinMode(NonInvertedOutputPin, OUTPUT);
+        TCCR4A |= _BV(COM4A1); // OC4A non-inverting mode
+    }
+    if (InvertedOutputPin) {
+        InvertedOutputPin = 7; // OC4B
+        pinMode(InvertedOutputPin, OUTPUT);
+        TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // OC4B inverting mode
+    }
+
+#else // __AVR_ATmega32U4__
     /*
-     * Timer 2 set up as a 62500Hz 8Bit PWM for 16 MHz.
+     * Timer 2 set up as a 62500Hz / 16us 8Bit PWM for 16 MHz.
      * The PWM 'buzz' is well above human hearing range and is very easy to filter out.
      */
     TCCR2A = _BV(WGM21) | _BV(WGM20); // Fast PWM
@@ -347,17 +373,19 @@ void Talkie::initializeHardware() {
         pinMode(InvertedOutputPin, OUTPUT);
         TCCR2A |= _BV(COM2A1) | _BV(COM2A0); // OC2A inverting mode
     }
-    TCCR2B = _BV(CS20);
+    TCCR2B = _BV(CS20); // direct clock
     TIMSK2 = 0;
 #endif // __AVR_ATmega32U4__
 
-// common code for all AVR
+// Setup sample rate Timer1 - common code for all AVR
 #ifdef MEASURE_TIMING
     pinMode(TIMING_PIN, OUTPUT);
 #endif
-// Unfortunately we can't calculate the next sample every PWM cycle
-// as the routine is too slow. So use Timer 1 to trigger that.
-// Timer 1 set up as a 8000Hz / 125us sample interrupt
+/*
+ * Unfortunately we can't calculate the next sample every PWM cycle
+ * as the routine is too slow. So use Timer 1 to trigger that.
+ * Timer 1 set up as a 8000Hz / 125us sample interrupt
+ */
     TCCR1A = 0;
     TCCR1B = _BV(WGM12) | _BV(CS10); // CTC mode, no prescale
     TCNT1 = 0;
@@ -443,7 +471,7 @@ void Talkie::terminateHardware() {
 #ifdef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
             pinMode(NonInvertedOutputPin, INPUT); // As tone needs this as output, disconnect only if no compatibility needed
 #else
-            // force initializing of tone library, next time tone() is called.
+            // force initializing of tone library for the next time tone() is called.
             noTone(NonInvertedOutputPin);
 #endif
         }
@@ -510,7 +538,10 @@ ISR(TIMER1_COMPB_vect) {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /*
+ * Computes next output value
+ * Called every 125 microsecond / 8000 Hz
  * 75 to 90 (when calling setNextSynthesizerData()) microseconds processing time @16MHz
  * 50 microseconds with 4 simple optimizations (change ">>15" to "<<1) >>16")
  */
@@ -531,7 +562,7 @@ void timerInterrupt() {
     int16_t u0, u1, u2, u3, u4, u5, u6, u7, u8, u9, u10;
 
 #if defined(__AVR__)
-#if defined(__AVR_ATmega32U4__)
+#if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     OCR4A = nextPwm;
     OCR4B = nextPwm;
 #elif defined(ARDUINO_AVR_ESPLORA)
