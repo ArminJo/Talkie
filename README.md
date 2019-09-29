@@ -1,7 +1,9 @@
 # Talkie
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
 [![Build Status](https://travis-ci.org/ArminJo/Talkie.svg?branch=master)](https://travis-ci.org/ArminJo/Talkie)
+[![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2FArminJo%2FTalkie)](https://github.com/brentvollebregt/hit-counter)
 
 ## Speech library for Arduino
 The original version can be found [here](https://github.com/going-digital/Talkie)
@@ -12,7 +14,7 @@ YouTube Demonstration of Talkie Voltmeter example
 [![Demonstration of Talkie Voltmeter example](https://img.youtube.com/vi/6jXkugZTwCs/0.jpg)](https://www.youtube.com/watch?v=6jXkugZTwCs)
 
 ## Improvements to the original and to the non blocking version of PaulStoffregen
-- Improved code so Talkie now runs on **8MHz** Arduino (with millis() interrupt disabled while talking).
+- Improved code so Talkie now runs on **8 MHz** Arduino (with millis() interrupt disabled while talking).
 - Fixed the ISR_RATIO Bug for plain Arduino.
 - Added utility functions sayQNumber(), sayQFloat(), sayQVoltageMilliVolts() extracted from the examples.
 - Inverted output at pin 11 is enabled by default to increase volume for direct attached piezo or speaker.
@@ -45,7 +47,9 @@ YouTube Demonstration of Talkie Voltmeter example
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
 
 ## Own vocabulary
-To create LPC data you can use [Qboxpro](http://ftp.whtech.com/pc%20utilities/qboxpro.zip), an unsupported old Windows application running under XP, which can produce Talkie compatible data streams. The missing BWCC.DLL (Borland Windows Custom Control Library) can be found e.g. [here](http://www.download-dll.com/dll-BWCC.dll.html).
+To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) or [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
+
+Another way to create LPC data is to use [Qboxpro](http://ftp.whtech.com/pc%20utilities/qboxpro.zip), an unsupported old Windows application running under XP, which can produce Talkie compatible data streams. The missing BWCC.DLL (Borland Windows Custom Control Library) can be found e.g. [here](http://www.download-dll.com/dll-BWCC.dll.html).
 The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell&ss=9&i=2) and goes like this:
  - Create a new project using the following project parameters : Byte / 8 KHz / 5220 coding table
  - Goto Project and add the audio file
@@ -53,7 +57,7 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
  - Edit concatenation : insert concatenation after by adding a name; then insert phrase and press OK
  - Format it by choosing the first line in the format menu : LPC 10V, 4UV
 
-Another way to generate the LPC data is to use the python script at https://github.com/ptwz/python_wizard
+
 
 ## Schematic for voltmeter example
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)

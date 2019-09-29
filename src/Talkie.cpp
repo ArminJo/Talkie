@@ -6,19 +6,19 @@
  *
  *  SUMMARY
  *  Talkie is a speech library for Arduino.
- *  The analog output value is created by an 8 bit PWM, the sample rate is 8kHz.
+ *  The analog output value is created by an 8 bit PWM, the sample rate is 8 kHz.
  *  On a plain ATmega, output is at pin 3 + 11 (of Timer 2) which are both enabled by default.
  *  It can also run on 8 MHz ATmega with either FAST_8BIT_MODE defined and slightly reduces speech quality or timer0 (for millis()) disabled  which is default.
  *
  *  You get increased volume if you use both outputs and connect speaker between non inverted (3) and inverted (11) output pin.
  *
- *  Timer 1 (16 bit - for Servo library) is used to fill in new values for the PWM at the sample rate of 8000Hz / 125us.
+ *  Timer 1 (16 bit - for Servo library) is used to fill in new values for the PWM at the sample rate of 8000 Hz / 125 us.
  *
- *  On a plain Arduino: Timer 2 (8 bit - for Tone library) is used to generate the 62500Hz / 16us PWM with 8 bit resolution on pin 3/PD3/OC2B + 11/PB3/OC2A.
+ *  On a plain Arduino: Timer 2 (8 bit - for Tone library) is used to generate the 62500 Hz / 16 us PWM with 8 bit resolution on pin 3/PD3/OC2B + 11/PB3/OC2A.
  *
- *  On ATmega2560: Timer 4 is used to generate the 62500Hz / 16us PWM with 8 bit resolution on pin 6/PH3/OC4A + 7/PH4/OC4B.
+ *  On ATmega2560: Timer 4 is used to generate the 62500 Hz / 16 us PWM with 8 bit resolution on pin 6/PH3/OC4A + 7/PH4/OC4B.
  *
- *  On ATmega32U4: Timer 4 for 200kHz / 5us PWM at pin 9/PB5/!OC4B + 10/PB6/OC4B for Leonardo board
+ *  On ATmega32U4: Timer 4 for 200 kHz / 5 us PWM at pin 9/PB5/!OC4B + 10/PB6/OC4B for Leonardo board
  *                                              at pin 5/PC6/!OC4A for Adafruit Circuit Playground Classic or Sparkfun Pro Micro board
  *                                              at pin 6/PD7/OC4D for Esplora board
  *
@@ -51,7 +51,7 @@
  *  - Added stopping timer1 interrupts at every end of speech to free resources for usage of Arduino tone library
  *  - Extracted initializeHardware() function
  *  - Added some utility functions, extracted from the examples.
- *  - Improved shifting code so Talkie now runs on 8MHz Arduino (with millis() interrupt disabled while talking)
+ *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
  */
 
 //#define __arm__
@@ -90,7 +90,7 @@ static int16_t synthK1, synthK2;
 #endif
 static int8_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
 
-#define ISR_RATIO (25000/ (1000000 / FS) ) // gives 200 for FS 8000 -> 40Hz or 25ms Sample update frequency
+#define ISR_RATIO (25000/ (1000000 / FS) ) // gives 200 for FS 8000 -> 40 Hz or 25 ms Sample update frequency
 
 #ifdef __cplusplus
 extern "C" {
@@ -331,7 +331,7 @@ void Talkie::initializeHardware() {
 #endif // ATmega32U4 flavors
 
 // common ATmega32U4
-// Set up Timer4 for fast PWM 200kHz / 5us
+// Set up Timer4 for fast PWM 200 kHz / 5 us
     PLLFRQ = PLLFRQ | _BV(PLLTM1) | _BV(PLLTM0);// Route PLL to async clk, PLL Postcaler for High Speed Timer = 2
     TCCR4B = _BV(CS40);//  1:1 prescale
     TCCR4D = 0;// Fast PWM mode
@@ -359,7 +359,7 @@ void Talkie::initializeHardware() {
 
 #else // __AVR_ATmega32U4__
     /*
-     * Timer 2 set up as a 62500Hz / 16us 8Bit PWM for 16 MHz.
+     * Timer 2 set up as a 62500 Hz / 16 us 8Bit PWM for 16 MHz.
      * The PWM 'buzz' is well above human hearing range and is very easy to filter out.
      */
     TCCR2A = _BV(WGM21) | _BV(WGM20); // Fast PWM
@@ -384,7 +384,7 @@ void Talkie::initializeHardware() {
 /*
  * Unfortunately we can't calculate the next sample every PWM cycle
  * as the routine is too slow. So use Timer 1 to trigger that.
- * Timer 1 set up as a 8000Hz / 125us sample interrupt
+ * Timer 1 set up as a 8000 Hz / 125 us sample interrupt
  */
     TCCR1A = 0;
     TCCR1B = _BV(WGM12) | _BV(CS10); // CTC mode, no prescale
@@ -542,7 +542,7 @@ extern "C" {
 /*
  * Computes next output value
  * Called every 125 microsecond / 8000 Hz
- * 75 to 90 (when calling setNextSynthesizerData()) microseconds processing time @16MHz
+ * 75 to 90 (when calling setNextSynthesizerData()) microseconds processing time @16 MHz
  * 50 microseconds with 4 simple optimizations (change ">>15" to "<<1) >>16")
  */
 void timerInterrupt() {
@@ -609,7 +609,7 @@ void timerInterrupt() {
     u1 = u2 - (((int16_t) synthK2 * x1) >> 7);
     u0 = u1 - (((int16_t) synthK1 * x0) >> 7);
 #else
-// the 4 changes from ">> 15" to "<<1) >> 16" save 25 us processing time @16MHz :-)
+// the 4 changes from ">> 15" to "<<1) >> 16" save 25 us processing time at 16 MHz :-)
     u1 = u2 - ((((int32_t) synthK2 * x1) << 1) >> 16);
     u0 = u1 - ((((int32_t) synthK1 * x0) << 1) >> 16);
 #endif
