@@ -59,7 +59,7 @@ void loop() {
 #if defined(__AVR__)
     float tVCCVoltage = getVCCVoltage();
     Serial.print(tVCCVoltage);
-    Serial.println(" Volt VCC");
+    Serial.println(" volt VCC");
 
     int voltage = analogRead(0) * tVCCVoltage / 1.023;
 #else
