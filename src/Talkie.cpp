@@ -41,17 +41,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
- * Version 1.0.2 09/2019
- * - ATmega2560 supported and tested
- * Version 1.0.1 09/2019
- * - Added SPI compatibility (after speaking do not reset pin 11 to input if SPI detected).
- * Version 1.0.0 11/2018
- *  - Fix the ISR_RATIO Bug for plain Arduino
- *  - Added a lot of comments and do refactoring to better understand the functionality
- *  - Added stopping timer1 interrupts at every end of speech to free resources for usage of Arduino tone library
- *  - Extracted initializeHardware() function
- *  - Added some utility functions, extracted from the examples.
- *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
  */
 
 //#define __arm__
@@ -359,6 +348,8 @@ void Talkie::initializeHardware() {
 
 #else // __AVR_ATmega32U4__
     /*
+     * Plain ATmega e.g. 328P here
+     *
      * Timer 2 set up as a 62500 Hz / 16 us 8Bit PWM for 16 MHz.
      * The PWM 'buzz' is well above human hearing range and is very easy to filter out.
      */
@@ -381,11 +372,11 @@ void Talkie::initializeHardware() {
 #ifdef MEASURE_TIMING
     pinMode(TIMING_PIN, OUTPUT);
 #endif
-/*
- * Unfortunately we can't calculate the next sample every PWM cycle
- * as the routine is too slow. So use Timer 1 to trigger that.
- * Timer 1 set up as a 8000 Hz / 125 us sample interrupt
- */
+    /*
+     * Unfortunately we can't calculate the next sample every PWM cycle
+     * as the routine is too slow. So use Timer 1 to trigger that.
+     * Timer 1 set up as a 8000 Hz / 125 us sample interrupt
+     */
     TCCR1A = 0;
     TCCR1B = _BV(WGM12) | _BV(CS10); // CTC mode, no prescale
     TCNT1 = 0;
@@ -462,26 +453,26 @@ void Talkie::terminateHardware() {
 #endif
 
     /*
-     * noTone disconnect the ports, so they are in normal port operation again.
+     * Call noTone() to force initializing of tone library for the next time tone() is called.
+     * noTone() disconnect the pin from timer, and write a 0 to the pin.
      * pinMode(3|11, INPUT) avoids the click at the end, if speaker is coupled by a capacitance.
+     * next tone() sets pin as output again.
      */
     if (NonInvertedOutputPin) {
         // Reset pin 11 to input only if no active SPI detected
         if (!(SPCR & _BV(SPE))) {
-#ifdef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
-            pinMode(NonInvertedOutputPin, INPUT); // As tone needs this as output, disconnect only if no compatibility needed
-#else
             // force initializing of tone library for the next time tone() is called.
+#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED // enable it to save Flash
             noTone(NonInvertedOutputPin);
 #endif
+            pinMode(NonInvertedOutputPin, INPUT);
         }
     }
     if (InvertedOutputPin) {
-#ifdef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
-        pinMode(InvertedOutputPin, INPUT); // As tone needs this as output, disconnect only if no compatibility needed
-#else
+#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
         noTone(InvertedOutputPin);
 #endif
+        pinMode(InvertedOutputPin, INPUT);
     }
 
     isTalkingFlag = false;

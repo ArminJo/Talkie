@@ -32,6 +32,24 @@
 
 #include <inttypes.h>
 
+#define VERSION_TALKIE 1.0.2
+/*
+ * Version 1.0.2 - 09-11/2019
+ * - ATmega2560 supported and tested.
+ * - Always set pins to input when finishing, to avoid a click.
+ *
+ * Version 1.0.1 - 09/2019
+ * - Added SPI compatibility (after speaking do not reset pin 11 to input if SPI detected).
+ *
+ * Version 1.0.0 - 11/2018
+ *  - Fix the ISR_RATIO Bug for plain Arduino
+ *  - Added a lot of comments and do refactoring to better understand the functionality
+ *  - Added stopping timer1 interrupts at every end of speech to free resources for usage of Arduino tone library
+ *  - Extracted initializeHardware() function
+ *  - Added some utility functions, extracted from the examples.
+ *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
+ */
+
 #if defined(__AVR__)
 #if !defined(__AVR_ATmega32U4__) && !defined(TCCR2A)
 #error "Sorry, when using an AVR chip, Talkie requires Timer2.  This board doesn't have one."

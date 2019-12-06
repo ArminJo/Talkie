@@ -1,5 +1,5 @@
-# Talkie
-
+# [Talkie](https://github.com/ArminJo/Talkie)
+### Version 1.0.2
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/Talkie/latest)](https://github.com/ArminJo/Talkie/commits/master)
@@ -40,10 +40,10 @@ YouTube Demonstration of Talkie Voltmeter example
 
 ## Hints
 - As **default** both inverted and not inverted outputs are enabled to **increase volume** if speaker is attached between them.
-- I use the speakers from old earphones or headphones, which have approximately 32 Ohm, directly without a series resistor. The headphone speaker tend to be much louder, especially when they stay in their original housings.
+- I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor. The headphone speaker tend to be much louder, especially when they stay in their original housings.
 - The library uses Timer 1 and Timer 2 on ATmega328, so libraries like Tone, Servo, analogWrite(), and some other libraries cannot be used while speaking.
-- After a call to say... you can use tone() again.
-- To use Servo write() after a call to say... you must detach() and attach() the servo before first write() in order to initialize the timer again for Servo.
+- After a call to `say...()` you can use `tone()` again.
+- To use Servo `write()` after a call to say... you must `detach()` and `attach()` the servo before first `write()` in order to initialize the timer again for Servo.
 - If you want to use **SPI** functions on ATmega328 **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseUseInvertedOutput();`.
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
 
@@ -58,20 +58,22 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
  - Edit concatenation : insert concatenation after by adding a name; then insert phrase and press OK
  - Format it by choosing the first line in the format menu : LPC 10V, 4UV
 
-
-
 ## Schematic for voltmeter example
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)
 
 # Modifying library properties
-To access the Arduino library files from a sketch, you have to first use `Sketch/Show Sketch Folder (Ctrl+K)` in the Arduino IDE.<br/>
+To access the Arduino library files from a sketch, you have to first use *Sketch/Show Sketch Folder (Ctrl+K)* in the Arduino IDE.<br/>
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 The library files itself are located in the `src` sub-directory.<br/>
-If you did not yet store the example as your own sketch, then with Ctrl+K you are instantly in the right library folder.
+If you did not yet store the example as your own sketch, then with *Ctrl+K* you are instantly in the right library folder.
+## Consider to use [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows) as IDE
+If you are using Sloeber as your IDE, you can easily define global symbols at *Properties/Arduino/CompileOptions*.<br/>
+![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Revision History
 ### Version 1.0.2
 - ATmega2560 supported and tested
+- Always set pins to input when finishing, to avoid a click.
 ### Version 1.0.1
 - Added SPI compatibility by not resetting pin 11 to input if SPI is detected
 - Added new constructor `Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);`
