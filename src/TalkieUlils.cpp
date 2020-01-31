@@ -52,6 +52,11 @@ int8_t sayQPause(Talkie * aVoice) {
     return aVoice->sayQ(spPAUSE1);
 }
 
+int8_t sayQTimeout(Talkie * aVoice) {
+    aVoice->sayQ(sp2_TIME);
+    return aVoice->sayQ(sp2_OUT);
+}
+
 /* sayQ any number between -999,999 and 999,999 */
 int8_t sayQNumber(Talkie * aVoice, long aNumber) {
     if (aNumber < 0) {

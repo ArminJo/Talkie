@@ -10,9 +10,9 @@
 The original version can be found [here](https://github.com/going-digital/Talkie)
 A good explanation of the TMS5220 operation and the LPC frame format can be found [here](https://github.com/mamedev/mame/blob/master/src/devices/sound/tms5220.txt)
 
-YouTube Demonstration of Talkie Voltmeter example
+YouTube Demonstration of Talkie voltmeter example
 
-[![Demonstration of Talkie Voltmeter example](https://img.youtube.com/vi/6jXkugZTwCs/0.jpg)](https://www.youtube.com/watch?v=6jXkugZTwCs)
+[![Demonstration of Talkie voltmeter example](https://img.youtube.com/vi/6jXkugZTwCs/0.jpg)](https://www.youtube.com/watch?v=6jXkugZTwCs)
 
 ## Improvements to the original and to the non blocking version of PaulStoffregen
 - Improved code so Talkie now runs on **8 MHz** Arduino (with millis() interrupt disabled while talking).

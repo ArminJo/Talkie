@@ -39,5 +39,6 @@ int8_t sayQFloat(Talkie * voice, float aFloat, int aDecimalPlaces, bool aSuppres
         false);
 int8_t sayQVoltageMilliVolts(Talkie * aVoice, long aMilliVolt);
 int8_t sayQPause(Talkie * aVoice);
+int8_t sayQTimeout(Talkie * aVoice);
 
 #endif /* TALKIEUTILS_H_ */

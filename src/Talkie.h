@@ -32,8 +32,12 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE 1.0.2
-/*
+#define VERSION_TALKIE "1.0.3"
+#define VERSION_TALKIE_NUMERICAL 103
+
+/* Version 1.0.3 - 12/2019
+ * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
+ *
  * Version 1.0.2 - 09-11/2019
  * - ATmega2560 supported and tested.
  * - Always set pins to input when finishing, to avoid a click.
