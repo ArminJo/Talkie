@@ -38,6 +38,7 @@ int8_t sayQNumber(Talkie * voice, long n);
 int8_t sayQFloat(Talkie * voice, float aFloat, int aDecimalPlaces, bool aSuppressLeadingZero = true, bool aSuppressTrailingZero =
         false);
 int8_t sayQVoltageMilliVolts(Talkie * aVoice, long aMilliVolt);
+int8_t sayQVoltageVolts(Talkie * aVoice, float aVolt);
 int8_t sayQPause(Talkie * aVoice);
 int8_t sayQTimeout(Talkie * aVoice);
 

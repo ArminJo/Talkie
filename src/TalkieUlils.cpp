@@ -48,6 +48,11 @@ int8_t sayQVoltageMilliVolts(Talkie * aVoice, long aMilliVolt) {
     return aVoice->sayQ(sp2_VOLTS);
 }
 
+int8_t sayQVoltageVolts(Talkie * aVoice, float aVolt) {
+    sayQFloat(aVoice, aVolt, 2, true, true);
+    return aVoice->sayQ(sp2_VOLTS);
+}
+
 int8_t sayQPause(Talkie * aVoice) {
     return aVoice->sayQ(spPAUSE1);
 }

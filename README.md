@@ -1,5 +1,5 @@
 # [Talkie](https://github.com/ArminJo/Talkie)
-### Version 1.0.2
+### Version 1.0.3
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/Talkie/latest)](https://github.com/ArminJo/Talkie/commits/master)
@@ -71,6 +71,10 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Revision History
+### Version 1.0.3
+- Added function `sayQTimeout()` in *TalkieUtils.cpp*.
+- Added example *USDistanceToVoice*.
+- Added function `sayQVoltageVolts()`.
 ### Version 1.0.2
 - ATmega2560 supported and tested
 - Always set pins to input when finishing, to avoid a click.
