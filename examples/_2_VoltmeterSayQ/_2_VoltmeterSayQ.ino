@@ -1,3 +1,28 @@
+/*
+ *  _2_VoltmeterSayQ.cpp
+ *
+ *  Tells the voltage measured by the ADC in millivolt.
+ *
+ *  Copyright (C) 2011-2020  Peter Knight, Armin Joachimsmeyer
+ *  armin.joachimsmeyer@gmail.com
+ *
+ *  This file is part of Talkie_new https://github.com/ArminJo/Talkie_new.
+ *
+ *  Talkie_new is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *
+ */
+
 #include <Arduino.h>
 
 // Talkie library
@@ -36,14 +61,13 @@ Talkie Voice;
 //Talkie Voice(true, false);
 
 void setup() {
-    Serial.begin(115200);
+    pinMode(LED_BUILTIN, OUTPUT);
+
+        Serial.begin(115200);
     while (!Serial)
         ; //delay for Leonardo
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
-
-    // for LED
-    pinMode(13, OUTPUT);
 
 #if defined(CORE_TEENSY)
     pinMode(5, OUTPUT);
@@ -61,15 +85,17 @@ void loop() {
     Serial.print(tVCCVoltage);
     Serial.println(" volt VCC");
 
-    int voltage = analogRead(0) * tVCCVoltage / 1.023;
+    int tVoltage = analogRead(0) * tVCCVoltage / 1.023;
 #else
-    int voltage = analogRead(0) * 3.3 / 1.023;
+    int tVoltage = analogRead(0) * 3.3 / 1.023;
 #endif
 
-    Serial.print(voltage);
+    Serial.print(tVoltage);
     Serial.println(" mV input");
 
-    sayQVoltageMilliVolts(&Voice, voltage);
+//    sayQVoltageMilliVolts(&Voice, tVoltage);
+    float tVoltageFloat = tVoltage / 1000;
+    sayQVoltageVolts(&Voice, tVoltageFloat);
     // Using .say() here is another way to block the sketch here and wait for end of speech as you can easily see in the source code of say().
     Voice.sayQ(spPAUSE1);
     while (Voice.isTalking()) {

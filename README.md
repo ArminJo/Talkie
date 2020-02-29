@@ -1,14 +1,14 @@
 # [Talkie](https://github.com/ArminJo/Talkie)
-### Version 1.0.3
+### [Version 1.0.3](https://github.com/ArminJo/Talkie/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/Talkie/latest)](https://github.com/ArminJo/Talkie/commits/master)
-[![Build Status](https://travis-ci.org/ArminJo/Talkie.svg?branch=master)](https://travis-ci.org/ArminJo/Talkie)
+[![Build Status](https://github.com/ArminJo/Talkie/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/Talkie/actions)
 [![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2FArminJo%2FTalkie)](https://github.com/brentvollebregt/hit-counter)
 
 ## Speech library for Arduino
-The original version can be found [here](https://github.com/going-digital/Talkie)
-A good explanation of the TMS5220 operation and the LPC frame format can be found [here](https://github.com/mamedev/mame/blob/master/src/devices/sound/tms5220.txt)
+The original version can be found [here](https://github.com/going-digital/Talkie).<br/>
+A good explanation of the TMS5220 operation and the LPC frame format can be found [here](https://github.com/mamedev/mame/blob/master/src/devices/sound/tms5220.txt).
 
 YouTube Demonstration of Talkie voltmeter example
 
@@ -84,13 +84,16 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 ### Version 1.0.0
 - Initial Arduino library version
 
-# Travis CI
-The Talkie library examples are built on Travis CI for the following boards:
+# CI
+Since Travis CI is unreliable and slow, the library examples are now tested with GitHub Actions for the following boards:
 
-- Arduino Uno
-- Arduino Leonardo
-- Arduino Mega 2560
-- Arduino cplayClassic
+- arduino:avr:uno
+- arduino:avr:leonardo
+- arduino:avr:mega
+- arduino:sam:arduino_due_x
+- esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
+- esp32:esp32:featheresp32:FlashFreq=80
+- STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension.

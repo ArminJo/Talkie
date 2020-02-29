@@ -140,7 +140,9 @@ void Talkie::setPtr(const uint8_t * aAddress) {
  * Returns 0 if nothing to play, otherwise the number of the queued items plus the one which is active.
  */
 uint8_t Talkie::getNumberOfWords() {
-    yield();
+#if defined(ESP8266)
+    yield(); // required for ESP8266
+#endif
     if (!isTalkingFlag) {
         return 0;   // Nothing playing!
     } else {
@@ -149,7 +151,9 @@ uint8_t Talkie::getNumberOfWords() {
 }
 
 bool Talkie::isTalking() {
-    yield();
+#if defined(ESP8266)
+    yield(); // required for ESP8266
+#endif
     return isTalkingFlag;
 }
 
@@ -222,7 +226,9 @@ const uint8_t * Talkie::FIFOPopFront() {
  */
 void Talkie::wait() {
     while (isTalkingFlag) {
-        yield();
+#if defined(ESP8266)
+        yield(); // required for ESP8266
+#endif
     }
 }
 
@@ -248,9 +254,7 @@ void Talkie::terminate() {
  */
 void Talkie::say(const uint8_t * aWordDataAddress) {
     sayQ(aWordDataAddress);
-    while (isTalkingFlag) {
-        yield();
-    }
+    wait();
 }
 
 /*
@@ -357,12 +361,12 @@ void Talkie::initializeHardware() {
     if (NonInvertedOutputPin) {
         NonInvertedOutputPin = 3; // OC2B
         pinMode(NonInvertedOutputPin, OUTPUT);
-        TCCR2A |= _BV(COM2B1); // OC2B non-inverting mode
+        TCCR2A |= _BV(COM2B1);// OC2B non-inverting mode
     }
     if (InvertedOutputPin) {
         InvertedOutputPin = 11; // OC2A
         pinMode(InvertedOutputPin, OUTPUT);
-        TCCR2A |= _BV(COM2A1) | _BV(COM2A0); // OC2A inverting mode
+        TCCR2A |= _BV(COM2A1) | _BV(COM2A0);// OC2A inverting mode
     }
     TCCR2B = _BV(CS20); // direct clock
     TIMSK2 = 0;

@@ -67,8 +67,8 @@
 
 #define FIFO_BUFFER_SIZE     24 // 24 sets of 4 bytes plus added queue indexes is about 100 added bytes.
 
-#define TALKIE_USE_PIN_FLAG 0xFF // Flag to signal, that pin should be used as output, but pin number is not yet filled in, since it depends of board type.
-#define TALKIE_DO_NOT_USE_PIN_FLAG 0x00 // As pin number is initially != 0xFF, this is not really needed at startup
+#define TALKIE_USE_PIN_FLAG 0xFF // Flag to signal, that a pin (for inverted or not inverted output) should be used as output, but pin number is not yet filled in, since it depends of board type.
+#define TALKIE_DO_NOT_USE_PIN_FLAG 0x00 // As pin number is initially != 0xFF, this is not really required at startup
 
 class Talkie {
 public:
@@ -102,7 +102,7 @@ public:
 private:
     // FIFO queue for sayQ
     const uint8_t * FIFOBuffer[FIFO_BUFFER_SIZE];
-    // not needed to specify the next 2 variables as volatile, since it code using them is guarded with noInterrupts() and interrupts()
+    // not required to specify the next 2 variables as volatile, since it code using them is guarded with noInterrupts() and interrupts()
     uint8_t back; // index of last voice init on setup = 0
     uint8_t front; // index of next voice init on setup = 0
 
