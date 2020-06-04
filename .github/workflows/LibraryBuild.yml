@@ -29,10 +29,14 @@ jobs:
           - arduino:avr:mega
           - arduino:avr:esplora
           - arduino:avr:circuitplay32u4cat
-          - arduino:avr:promicro
+          - SparkFun:avr:promicro
 
         include:
           - arduino-boards-fqbn: arduino:avr:uno
+
+          - arduino-boards-fqbn: SparkFun:avr:promicro
+            arduino-platform: arduino:avr,SparkFun:avr
+            platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json # Arduino URL is not required here
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
@@ -47,10 +51,11 @@ jobs:
         env:
           # Passing parameters to the script by setting the appropriate ENV_* variables.
           ENV_ARDUINO_BOARD_FQBN: ${{ matrix.arduino-boards-fqbn }}
+          ENV_ARDUINO_PLATFORM: ${{ matrix.arduino-platform }}
           ENV_PLATFORM_URL: ${{ matrix.platform-url }}
-          ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
-          ENV_EXAMPLES_EXCLUDE: ${{ matrix.examples-exclude }}
-          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
+#          ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
+#          ENV_EXAMPLES_EXCLUDE: ${{ matrix.examples-exclude }}
+#          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
         run: |
           wget --quiet https://raw.githubusercontent.com/ArminJo/arduino-test-compile/master/arduino-test-compile.sh
             ls -l arduino-test-compile.sh

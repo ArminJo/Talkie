@@ -41,7 +41,9 @@
 #include <Talkie.h>
 
 #include <TalkieUtils.h>
+#if defined(__AVR__)
 #include "ADCUtils.h" // for getVCCVoltage()
+#endif
 
 /*
  * Voice PWM output pins for different ATmegas:

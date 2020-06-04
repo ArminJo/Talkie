@@ -33,7 +33,8 @@
 #include <inttypes.h>
 
 #define VERSION_TALKIE "1.0.3"
-#define VERSION_TALKIE_NUMERICAL 103
+#define VERSION_TALKIE_MAJOR 1
+#define VERSION_TALKIE_MINOR 0
 
 /* Version 1.0.3 - 2/2020
  * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
@@ -55,6 +56,10 @@
  *  - Added some utility functions, extracted from the examples.
  *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
  */
+
+#if F_CPU > 16000000L
+#define TALKIE_HIGHQUALITY
+#endif
 
 #if defined(__AVR__)
 #if !defined(__AVR_ATmega32U4__) && !defined(TCCR2A)
@@ -94,8 +99,8 @@ public:
     bool isTalking();
     uint8_t getBits(uint8_t bits);
     void setPtr(const uint8_t * aAddress);
-    void FIFOPushBack(const uint8_t *aAddress);	// only sayQ() calls this
-    const uint8_t * FIFOPopFront();	// only sayISR() calls this
+    void FIFOPushBack(const uint8_t *aAddress); // only sayQ() calls this
+    const uint8_t * FIFOPopFront(); // only sayISR() calls this
 
     volatile uint8_t free; // init on setup = FIFO_BUFFER_SIZE
 
