@@ -96,7 +96,7 @@ void sayNumber(long n) {
 }
 void setup() {
 //    voice.doNotUseUseInvertedOutput();
-#if defined(CORE_TEENSY)
+#if defined(TEENSYDUINO)
     pinMode(5, OUTPUT);
     digitalWrite(5, HIGH); //Enable Amplified PROP shield
 #endif

@@ -1,0 +1,22 @@
+{
+  "name": "Talkie",
+  "keywords": "Speech",
+  "description": "Speech library for Arduino.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArminJo/Talkie"
+  },
+  "version": "1.0.2",
+  "exclude": "pictures",
+  "authors": {
+    "name": "Armin Joachimsmeyer",
+    "email": "armin.joachimsmeyer@gmail.com"
+  },
+  "license": "GPL-3.0-or-later",
+  "frameworks": "arduino",
+  "platforms": [
+    "atmelavr",
+    "atmelmegaavr",
+    "atmelsam"
+  ]
+}

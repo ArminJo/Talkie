@@ -127,7 +127,7 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
      * Only thing is that the pulse ends when we are in an interrupt routine, thus prolonging the measured pulse duration.
      * Alternatively we can use pulseIn() in a noInterrupts() context, but this will effectively stop the millis() timer for duration of pulse / or timeout.
      */
-#if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
+#if ! defined(__AVR__) || defined(TEENSYDUINO) || defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
     noInterrupts();
     unsigned long tUSPulseMicros = pulseIn(tEchoInPin, HIGH, aTimeoutMicros);
     interrupts();

@@ -29,10 +29,10 @@
  *
  */
 
-#include <stdint.h>
-
 #ifndef HCSR04_H_
 #define HCSR04_H_
+
+#include <stdint.h>
 
 #define US_DISTANCE_DEFAULT_TIMEOUT_MICROS 20000
 #define US_DISTANCE_TIMEOUT_MICROS_FOR_1_METER 5825  // Timeout of 5825 is 1 meter

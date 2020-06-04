@@ -21,8 +21,6 @@
 
 Talkie voice;
 
-#define VERSION_EXAMPLE "1.0"
-
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
@@ -30,10 +28,10 @@ void setup() {
     while (!Serial); //delay for Leonardo, but this loops forever for Maple Serial
 #endif
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_TALKIE));
 
 //    voice.doNotUseUseInvertedOutput();
-#if defined(CORE_TEENSY)
+#if defined(TEENSYDUINO)
     pinMode(5, OUTPUT);
     digitalWrite(5, HIGH); //Enable Amplified PROP shield
 #endif

@@ -43,8 +43,6 @@
 #include <TalkieUtils.h>
 #include "ADCUtils.h" // for getVCCVoltage()
 
-#define VERSION_EXAMPLE "1.2"
-
 /*
  * Voice PWM output pins for different ATmegas:
  *  ATmega328 (Uno and Nano): non inverted at pin 3, inverted at pin 11.
@@ -67,9 +65,9 @@ void setup() {
     while (!Serial)
         ; //delay for Leonardo
     // Just to know which program is running on my Arduino
-    Serial.println(F("START " __FILE__ "\r\nVersion " VERSION_EXAMPLE " from " __DATE__));
+    Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_TALKIE));
 
-#if defined(CORE_TEENSY)
+#if defined(TEENSYDUINO)
     pinMode(5, OUTPUT);
     digitalWrite(5, HIGH); //Enable Amplified PROP shield
 #endif
@@ -94,7 +92,7 @@ void loop() {
     Serial.println(" mV input");
 
 //    sayQVoltageMilliVolts(&Voice, tVoltage);
-    float tVoltageFloat = tVoltage / 1000;
+    float tVoltageFloat = tVoltage / 1000.0;
     sayQVoltageVolts(&Voice, tVoltageFloat);
     // Using .say() here is another way to block the sketch here and wait for end of speech as you can easily see in the source code of say().
     Voice.sayQ(spPAUSE1);

@@ -34,14 +34,14 @@
 #include <inttypes.h>
 
 // 353 bytes used for parameters
-#if !defined(USE_10_BIT_VALUES)
+#if !defined(USE_10_BIT_VALUES) // from TI5220
 // parameters based on TI2802 values
 static const uint8_t tmsEnergy[0x10] PROGMEM = {0, 2, 3, 4, 5, 7, 10, 15, 20, 32, 41, 57, 81, 114, 161, 255};
 static const uint8_t tmsPeriod[0x40] PROGMEM = {0, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
     36, 37, 38, 39, 40, 41, 42, 43, 45, 47, 49, 51, 53, 54, 57, 59, 61, 63, 66, 69, 71, 73, 77, 79, 81, 85, 87, 92, 95, 99, 102,
     106, 110, 115, 119, 123, 128, 133, 138, 143, 149, 154, 160};
 
-#ifdef FAST_8BIT_MODE
+#  ifdef FAST_8BIT_MODE // for K1 and K2
 /*
  * Use 8bit coefficients K1 and K2.
  * Saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega
@@ -51,7 +51,7 @@ static const int8_t tmsK1[0x20] PROGMEM = {-125, -124, -124, -124, -123, -123, -
     -111, -109, -103, -95, -84, -72, -57, -39, -20, 0, 20, 39, 57, 72, 85, 95, 103, 109};
 static const int8_t tmsK2[0x20] PROGMEM = {-82, -75, -68, -61, -52, -44, -34, -24, -14, -4, 6, 16, 26, 36, 45, 54, 62, 70, 77, 83,
     89, 94, 98, 102, 106, 109, 112, 114, 116, 118, 119, 127};
-#else
+#  else
 /*
  * 16 bit coefficients K1 and K2.
  */
@@ -61,7 +61,8 @@ static const int16_t tmsK1[0x20] PROGMEM = {-32064, -31872, -31808, -31680, -315
 static const int16_t tmsK2[0x20] PROGMEM = {-20992, -19328, -17536, -15552, -13440, -11200, -8768, -6272, -3712, -1088, 1536, 4160,
     6720, 9216, 11584, 13824, 15936, 17856, 19648, 21248, 22656, 24000, 25152, 26176, 27072, 27840, 28544, 29120, 29632, 30080,
     30464, 32384};
-#endif
+#  endif
+
 static const int8_t tmsK3[0x10] PROGMEM = {-110, -97, -83, -70, -56, -43, -29, -16, -2, 11, 25, 38, 52, 65, 79, 92};
 static const int8_t tmsK4[0x10] PROGMEM = {-82, -68, -54, -40, -26, -12, 1, 15, 29, 43, 57, 71, 85, 99, 113, 126};
 static const int8_t tmsK5[0x10] PROGMEM = {-82, -70, -59, -47, -35, -24, -12, -1, 11, 23, 34, 46, 57, 69, 81, 92};
@@ -70,9 +71,10 @@ static const int8_t tmsK7[0x10] PROGMEM = {-77, -65, -53, -41, -29, -17, -5, 7, 
 static const int8_t tmsK8[0x08] PROGMEM = {-64, -40, -16, 7, 31, 55, 79, 102};
 static const int8_t tmsK9[0x08] PROGMEM = {-64, -44, -24, -4, 16, 37, 57, 77};
 static const int8_t tmsK10[0x08] PROGMEM = {-51, -33, -15, 4, 22, 32, 59, 77};
-#else
+
+#else // TALKIE_HIGHQUALITY
 /*
- * Original values for energy, period and K1 to K10 from TI5220 with 10 bit resolution | TI_5110_5220_LPC
+ * Original values for energy, period and K1 to K10 from TI5220 with 10 bit resolution for K1 to K10 | TI_5110_5220_LPC
  */
 static const uint8_t tmsEnergy[0x10] PROGMEM = {0, 1, 2, 3, 4, 6, 8, 11, 16, 23, 33, 47, 63, 85, 114, 0}; // TI_028X_LATER_ENERGY
 static const uint8_t tmsPeriod[0x40] PROGMEM = {0, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,

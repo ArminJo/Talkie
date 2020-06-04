@@ -35,7 +35,9 @@
 #include "TalkieUtils.h"
 
 #if defined(__arm__)
-#include <avr/dtostrf.h>
+#  if ! defined(TEENSYDUINO)
+#  include <avr/dtostrf.h>
+#  endif
 #endif
 
 int8_t sayQDigit(Talkie * aVoice, char aDigit) {

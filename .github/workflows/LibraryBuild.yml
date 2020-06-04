@@ -6,13 +6,20 @@
 
 # This is the name of the workflow, visible on GitHub UI.
 name: LibraryBuild
-on: [push, pull_request] # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+on:
+  push: # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+    paths:
+    - '**.ino'
+    - '**.cpp'
+    - '**.h'
+    - '**LibraryBuild.yml'
+  pull_request:
 
 jobs:
   build:
     name: ${{ matrix.arduino-boards-fqbn }} - test compiling examples
 
-    runs-on: ubuntu-latest # I picked Ubuntu to use shell scripts.
+    runs-on: ubuntu-18.04 # I picked Ubuntu to use shell scripts.
 
     strategy:
       matrix:
@@ -20,15 +27,32 @@ jobs:
           - arduino:avr:uno
           - arduino:avr:leonardo
           - arduino:avr:mega
+          - arduino:avr:esplora
+          - arduino:avr:circuitplay32u4cat
+          - arduino:avr:promicro
+
+        include:
+          - arduino-boards-fqbn: arduino:avr:uno
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false
 
     steps:
+      # First of all, we clone the repo using the `checkout` action.
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
 
-      - name: Compile all examples
-        uses: ArminJo/arduino-test-compile@master
-        with:
-          arduino-board-fqbn: ${{ matrix.arduino-boards-fqbn }}
+      # Use the arduino-test-compile script, because it is faster
+      - name: Compile all examples using the bash script arduino-test-compile.sh
+        env:
+          # Passing parameters to the script by setting the appropriate ENV_* variables.
+          ENV_ARDUINO_BOARD_FQBN: ${{ matrix.arduino-boards-fqbn }}
+          ENV_PLATFORM_URL: ${{ matrix.platform-url }}
+          ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
+          ENV_EXAMPLES_EXCLUDE: ${{ matrix.examples-exclude }}
+          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
+        run: |
+          wget --quiet https://raw.githubusercontent.com/ArminJo/arduino-test-compile/master/arduino-test-compile.sh
+            ls -l arduino-test-compile.sh
+            chmod +x arduino-test-compile.sh
+            ./arduino-test-compile.sh
