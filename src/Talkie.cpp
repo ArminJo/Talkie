@@ -91,7 +91,19 @@ void timerInterrupt(void);
 
 #if defined(__arm__)
 #if defined(TEENSYDUINO)
+    // common for all Teensy
 IntervalTimer sIntervalTimer;
+#  define _12_BIT_OUTPUT
+
+#  if defined(__MKL26Z64__) // Teensy LC
+#  define DAC_PIN A12
+
+#  elif defined(__MK20DX256__) // Teensy 3.1 / 3.2
+#  define DAC_PIN A14
+
+#  elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // Teensy 3.5 / 3.6
+#  define DAC_PIN A21 // Or A22
+#  endif // defined(__MKL26Z64__)
 #else
 static void tcConfigure(uint32_t sampleRate);
 static void tcStartCounter();
@@ -112,7 +124,11 @@ Talkie::Talkie() { // @suppress("Class members should be properly initialized")
     /*
      * Enable non inverted and inverted output by default
      */
+#if defined(DAC_PIN)
+    NonInvertedOutputPin = DAC_PIN; // initialize with DAC pin
+#else
     NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
+#endif
     InvertedOutputPin = TALKIE_USE_PIN_FLAG;
 
     isTalkingFlag = false;
@@ -121,7 +137,11 @@ Talkie::Talkie() { // @suppress("Class members should be properly initialized")
 
 Talkie::Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin) { // @suppress("Class members should be properly initialized")
     if (aUseNonInvertedOutputPin) {
+#if defined(DAC_PIN)
+        NonInvertedOutputPin = DAC_PIN; // initialize with DAC pin
+#else
         NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
+#endif
     }
     if (aUseInvertedOutputPin) {
         InvertedOutputPin = TALKIE_USE_PIN_FLAG;
@@ -129,6 +149,11 @@ Talkie::Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin) { // @
 
     isTalkingFlag = false;
     sPointerToTalkieForISR = this;
+}
+
+// To be compatible to Teensy library
+void Talkie::beginPWM(uint8_t aPinPWM) {
+    NonInvertedOutputPin = aPinPWM;
 }
 
 void Talkie::setPtr(const uint8_t * aAddress) {
@@ -295,19 +320,20 @@ void Talkie::initializeHardware() {
 // Enable the speech system whenever say() is called.
 #if defined(__AVR__)
 #define _8_BIT_OUTPUT // Use 8 bit PWM
+
 #if defined(__AVR_ATmega32U4__) // Use Timer 4 instead of Timer 2
 #  if defined(ARDUINO_AVR_CIRCUITPLAY) || defined(ARDUINO_AVR_PROMICRO)
 // Adafruit Circuit Playground Classic or Sparkfun Pro Micro board. The first does not need inverted output, the latter does not connect it.
 // Cannot be used on plain Leonardos because inverted output is connected to internal led.
     NonInvertedOutputPin = 5; // D5/PC6/!OC4A
-#define PWM_VALUE_DESTINATION OCR4A
+#  define PWM_VALUE_DESTINATION OCR4A
     InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4A = _BV(COM4A0) | _BV(PWM4A); // Clear on match, PWMA on, OC4A/PC7 & !OC4A/PC6 connected
 
 #  elif defined(ARDUINO_AVR_ESPLORA)
     NonInvertedOutputPin = 6; // Only D6/PD7/OC4D connected to Speaker
-#define PWM_VALUE_DESTINATION OCR4D
+#  define PWM_VALUE_DESTINATION OCR4D
     InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4C = _BV(COM4D1) |_BV(PWM4D);
@@ -315,7 +341,7 @@ void Talkie::initializeHardware() {
 #  else
 // Leonardo, Lilypad USB, FLORA, TEENSY
     NonInvertedOutputPin = 10; // D10/OC4B/PB6
-#define PWM_VALUE_DESTINATION OCR4B
+#  define PWM_VALUE_DESTINATION OCR4B
     pinMode(NonInvertedOutputPin, OUTPUT);
     if (InvertedOutputPin) {
         // use both output
@@ -330,32 +356,32 @@ void Talkie::initializeHardware() {
 
 // common ATmega32U4
 // Set up Timer4 for fast PWM 200 kHz / 5 us
-    PLLFRQ = PLLFRQ | _BV(PLLTM1) | _BV(PLLTM0);// Route PLL to async clk, PLL Postcaler for High Speed Timer = 2
-    TCCR4B = _BV(CS40);//  1:1 prescale
-    TCCR4D = 0;// Fast PWM mode
-    TCCR4E = 0;// Not enhanced mode
-    TC4H = 0;// Not 10-bit mode
-    DT4 = 0;// No dead time
-    OCR4C = 255;// TOP
-    OCR4A = 127;// 50% duty to start
-    OCR4B = 127;// 50% duty to start
+    PLLFRQ = PLLFRQ | _BV(PLLTM1) | _BV(PLLTM0); // Route PLL to async clk, PLL Postcaler for High Speed Timer = 2
+    TCCR4B = _BV(CS40); //  1:1 prescale
+    TCCR4D = 0; // Fast PWM mode
+    TCCR4E = 0; // Not enhanced mode
+    TC4H = 0; // Not 10-bit mode
+    DT4 = 0; // No dead time
+    OCR4C = 255; // TOP
+    OCR4A = 127; // 50% duty to start
+    OCR4B = 127; // 50% duty to start
 
 #elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TCCR4A = _BV(WGM40); // Fast PWM 8 Bit
-    TCCR4B = _BV(WGM42) | _BV(CS40);  // Fast PWM 8 Bit, direct clock
+    TCCR4B = _BV(WGM42) | _BV(CS40);// Fast PWM 8 Bit, direct clock
 
     if (NonInvertedOutputPin) {
         NonInvertedOutputPin = 6; // OC4A
         pinMode(NonInvertedOutputPin, OUTPUT);
-        TCCR4A |= _BV(COM4A1); // OC4A non-inverting mode
+        TCCR4A |= _BV(COM4A1);// OC4A non-inverting mode
     }
     if (InvertedOutputPin) {
         InvertedOutputPin = 7; // OC4B
         pinMode(InvertedOutputPin, OUTPUT);
-        TCCR4A |= _BV(COM4B1) | _BV(COM4B0); // OC4B inverting mode
+        TCCR4A |= _BV(COM4B1) | _BV(COM4B0);// OC4B inverting mode
     }
-#define PWM_VALUE_DESTINATION OCR4A
-#define PWM_INVERTED_VALUE_DESTINATION OCR4B
+#  define PWM_VALUE_DESTINATION OCR4A
+#  define PWM_INVERTED_VALUE_DESTINATION OCR4B
 
 #else // __AVR_ATmega32U4__
     /*
@@ -375,8 +401,8 @@ void Talkie::initializeHardware() {
         pinMode(InvertedOutputPin, OUTPUT);
         TCCR2A |= _BV(COM2A1) | _BV(COM2A0); // OC2A inverting mode
     }
-#define PWM_VALUE_DESTINATION OCR2B
-#define PWM_INVERTED_VALUE_DESTINATION OCR2A
+#  define PWM_VALUE_DESTINATION OCR2B
+#  define PWM_INVERTED_VALUE_DESTINATION OCR2A
 
     TCCR2B = _BV(CS20); // direct clock
     TIMSK2 = 0;
@@ -405,25 +431,16 @@ void Talkie::initializeHardware() {
     TIMSK1 = _BV(OCIE1B); // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #elif defined(TEENSYDUINO)
-#  if defined(__MKL26Z64__) // Teensy LC
-#  define ANALOG_WRITE_DESTINATION A12
-
-#  elif defined(__MK20DX128__) || defined(__MK20DX256__) // Teensy 3.0 / 3.1 / 3.2
-#  define ANALOG_WRITE_DESTINATION A14
-
-#  elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // Teensy 3.5 / 3.6
-#  define ANALOG_WRITE_DESTINATION A21
-
-#  elif defined(__IMXRT1052__) || defined(__IMXRT1062__) // Teensy 4.0 / 4.1
-#  define ANALOG_WRITE_DESTINATION 5
-    analogWriteFrequency(ANALOG_WRITE_DESTINATION,62500);
-#  else
-#  error "Unknown Teensy"
-#  endif //(__MKL26Z64__) et.
-
     // common for all Teensy
-#define _12_BIT_OUTPUT
     sIntervalTimer.begin(timerInterrupt, 1000000L / FS);
+
+#  if defined(DAC_PIN)
+    analogWriteResolution(12);
+#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
+#  else // Teensy 3.0, Teensy 4.0 / 4.1
+#    define ANALOG_WRITE_DESTINATION A6 // No DAC here
+    analogWriteFrequency(NonInvertedOutputPin,62500);
+#  endif // (DAC_PIN)
 
 #elif defined(ARDUINO_ARCH_STM32)
 #define ANALOG_WRITE_DESTINATION D7
@@ -447,7 +464,6 @@ void Talkie::initializeHardware() {
     tcConfigure(FS);
     tcStartCounter();
 #endif // AVR
-
 
     isTalkingFlag = true;
 }
@@ -476,6 +492,7 @@ void Talkie::terminateHardware() {
 #  endif
 #endif
 
+#if defined(__AVR__)
     /*
      * Call noTone() to force initializing of tone library for the next time tone() is called.
      * noTone() disconnect the pin from timer, and write a 0 to the pin.
@@ -498,6 +515,7 @@ void Talkie::terminateHardware() {
 #endif
         pinMode(InvertedOutputPin, INPUT);
     }
+#endif // (__AVR__)
 
     isTalkingFlag = false;
 }
@@ -588,7 +606,7 @@ void timerInterrupt() {
 #if defined(ANALOG_WRITE_DESTINATION)
     analogWrite(ANALOG_WRITE_DESTINATION, nextPwm);
 #endif
-#if ! defined(PWM_VALUE_DESTINATION)  && ! defined(ANALOG_WRITE_DESTINATION)
+#if ! defined(PWM_VALUE_DESTINATION) && ! defined(ANALOG_WRITE_DESTINATION)
 #error One of PWM_VALUE_DESTINATION or ANALOG_WRITE_DESTINATION must be defined in initializeHardware()
 #endif
     if (synthPeriod) {

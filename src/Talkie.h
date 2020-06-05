@@ -32,11 +32,14 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.0.3"
+#define VERSION_TALKIE "1.1.0"
 #define VERSION_TALKIE_MAJOR 1
-#define VERSION_TALKIE_MINOR 0
+#define VERSION_TALKIE_MINOR 1
 
-/* Version 1.0.3 - 2/2020
+/*
+ * Version 1.1.0 - 6/2020
+ * - Teensy support.
+ * - Version number.
  * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
  * - Added example *USDistanceToVoice*.
  * - Added function `sayQVoltageVolts()`.
@@ -79,6 +82,7 @@ class Talkie {
 public:
     Talkie();
     Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);
+    void beginPWM(uint8_t aPinPWM); // // To be compatible to Teensy library
     void say(const uint8_t * aWordDataAddress); // Blocking version
     int8_t sayQ(const uint8_t * aWordDataAddress); // Queuing version. Returns free space in FIFO
     void wait(); // wait for sayQ to end
@@ -90,8 +94,11 @@ public:
     void terminateHardware();
     void doNotUseUseInvertedOutput(bool aDoNotUseInvertedOutput = true);
     void doNotUseNonInvertedOutput(bool aDoNotUseNonInvertedOutput = true);
-    uint8_t NonInvertedOutputPin; // 0xFF -> Enable output (default). 0 -> Disable output. On Arduino enables pin 3 (Talkie default) as PWM output
-    uint8_t InvertedOutputPin;    // 0xFF -> Enable output (default). 0 -> Disable output. On Arduino enables pin 11 as inverted PWM output to increase the volume
+
+    // Output pins to use. 0xFF -> Enable output (default). 0 -> Disable output.
+    uint8_t NonInvertedOutputPin; // Pin number of output, maybe fixed for some boards. On Arduino enables pin 3 (Talkie default) as PWM output. 0xFF -> Enable output (default). 0 -> Disable output.
+    uint8_t InvertedOutputPin;    // On Arduino enables pin 11 as inverted PWM output to increase the volume.
+
     const uint8_t * volatile WordDataPointer; // Pointer to word data array !!! Must be volatile, since it is accessed also by ISR
     uint8_t WordDataBit; // [0-7] bit number of next bit in array bitstream
     volatile bool isTalkingFlag;
