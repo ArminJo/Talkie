@@ -10,8 +10,7 @@
 #ifndef TALKIE_VOCAB_SPECIAL_H_
 #define TALKIE_VOCAB_SPECIAL_H_
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 extern const uint8_t spPAUSE1[] PROGMEM;
 extern const uint8_t spPAUSE2[] PROGMEM;

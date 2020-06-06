@@ -20,8 +20,7 @@
 #ifndef TALKIE_VOCAB_TOMS_DINER_H_
 #define TALKIE_VOCAB_TOMS_DINER_H_
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 extern const uint8_t spDINER[] PROGMEM;
 #endif /* TALKIE_VOCAB_TOMS_DINER_H_ */

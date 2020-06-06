@@ -12,8 +12,7 @@
 #ifndef TALKIE_VOCAB_US_CLOCK_H_
 #define TALKIE_VOCAB_US_CLOCK_H_
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 extern const uint8_t spc_THE[]       PROGMEM;
 extern const uint8_t spc_TIME[]      PROGMEM;

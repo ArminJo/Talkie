@@ -10,8 +10,7 @@
 #ifndef TALKIE_VOCAB_SOUNDBITES_H_
 #define TALKIE_VOCAB_SOUNDBITES_H_
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 extern const uint8_t spWHAT_IS_THY_BIDDING[] PROGMEM;
 extern const uint8_t spHASTA_LA_VISTA[]      PROGMEM;

@@ -13,8 +13,7 @@
 #ifndef TALKIE_VOCAB_US_ACORN_H_
 #define TALKIE_VOCAB_US_ACORN_H_
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 // moved to Vocab_Special
 //extern const uint8_t spa_PAUSE1[]    PROGMEM;

@@ -29,7 +29,10 @@ jobs:
           - arduino:avr:mega
           - arduino:avr:esplora
           - arduino:avr:circuitplay32u4cat
+#          - arduino:sam:arduino_due_x
+          - arduino:samd:arduino_zero_native
           - SparkFun:avr:promicro
+          - esp32:esp32:featheresp32:FlashFreq=80
 
         include:
           - arduino-boards-fqbn: arduino:avr:uno
@@ -37,6 +40,9 @@ jobs:
           - arduino-boards-fqbn: SparkFun:avr:promicro
             arduino-platform: arduino:avr,SparkFun:avr
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json # Arduino URL is not required here
+
+          - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
+            platform-url: https://dl.espressif.com/dl/package_esp32_index.json
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false

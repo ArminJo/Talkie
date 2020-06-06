@@ -25,24 +25,30 @@
 
 #include <Arduino.h>
 
-// Talkie library
-// Copyright 2011 Peter Knight
-// This code is released under GPLv2 license.
-//
-// Now for something a bit more challenging.
-//
-// Building sentences by program.
-//
-// The sayQNumber() function can sayQ any number under a million by
-// building the number from short phrases,
-//
-// Connect a sensor to Analog 0, and this program will read the sensor voltage.
+/* Pin mapping table for different platforms
+ *
+ * Platform     Normal      Inverted    8kHz timer  PWM timer
+ * -------------------------------------------------------
+ * AVR          3           11          1           2
+ * ATmega2560   6/PH3       7/PH4       1           4
+ * Leonardo     9/PB5       10/PB6      1           4
+ * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
+ * Esplora      6/PD7       %           1           4
+ * SAMD         14          %           TC5         DAC0
+ * ESP32        25          %           hw_timer_t  DAC0
+ * Teensy       12/14721    %         IntervalTimer analogWrite
+ */
 
 #include <Talkie.h>
 
 #include <TalkieUtils.h>
+#include <Vocab_Special.h>
+
 #if defined(__AVR__)
 #include "ADCUtils.h" // for getVCCVoltage()
+#elif defined(ARDUINO_ARCH_SAMD)
+// On the Zero and others we switch explicitly to SerialUSB
+//#define Serial SerialUSB // This does not work for Zero
 #endif
 
 /*
@@ -59,11 +65,10 @@
  */
 Talkie Voice;
 //Talkie Voice(true, false);
-
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 
-        Serial.begin(115200);
+    Serial.begin(115200);
     while (!Serial)
         ; //delay for Leonardo
     // Just to know which program is running on my Arduino
@@ -72,6 +77,8 @@ void setup() {
 #if defined(TEENSYDUINO)
     pinMode(5, OUTPUT);
     digitalWrite(5, HIGH); //Enable Amplified PROP shield
+#elif defined(ARDUINO_ARCH_SAMD)
+    analogReadResolution(12);
 #endif
     Serial.print("Voice queue size is: ");
     Serial.println(Voice.sayQ(spPAUSE1)); // this initializes the queue and the hardware
@@ -85,7 +92,11 @@ void loop() {
     Serial.print(tVCCVoltage);
     Serial.println(" volt VCC");
 
-    int tVoltage = analogRead(0) * tVCCVoltage / 1.023;
+    int tVoltage = analogRead(A0) * tVCCVoltage / 1.023;
+#elif defined(ESP32)
+    int tVoltage = analogRead(A0) * 3.3 / 4.096;
+#elif defined(ARDUINO_ARCH_SAMD)
+    int tVoltage = analogRead(A1) * 3.3 / 4.096; // A0 is DAC output
 #else
     int tVoltage = analogRead(0) * 3.3 / 1.023;
 #endif

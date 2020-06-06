@@ -19,8 +19,7 @@
 #ifndef TALKIE_VOCAB_US_TI99_H_
 #define TALKIE_VOCAB_US_TI99_H_
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 extern const uint8_t spt_A[]                 PROGMEM;
 extern const uint8_t spt_A1[]                PROGMEM;

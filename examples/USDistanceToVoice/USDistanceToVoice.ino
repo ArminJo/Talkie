@@ -27,15 +27,22 @@
 
 #include "TalkieUtils.h"
 #include "Vocab_US_Large.h" // for timeout
+#include "Vocab_Special.h"
 
 #include "HCSR04.h"
 
-/*
- * Voice PWM output pins for different ATmegas:
- *  ATmega328 (Uno and Nano): non inverted at pin 3, inverted at pin 11.
- *  ATmega2560: non inverted at pin 6, inverted at pin 7.
- *  ATmega32U4 (Leonardo): non inverted at pin 10, inverted at pin 9.
- *  ATmega32U4 (CircuitPlaygound): only non inverted at pin 5.
+/* Pin mapping table for different platforms
+ *
+ * Platform     Normal      Inverted    8kHz timer  PWM timer
+ * -------------------------------------------------------
+ * AVR          3           11          1           2
+ * ATmega2560   6/PH3       7/PH4       1           4
+ * Leonardo     9/PB5       10/PB6      1           4
+ * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
+ * Esplora      6/PD7       %           1           4
+ * SAMD         14          %           TC5         DAC0
+ * ESP32        25          %           hw_timer_t  DAC0
+ * Teensy       12/14721    %         IntervalTimer analogWrite
  *
  *  As default both inverted and not inverted outputs are enabled to increase volume if speaker is attached between them.
  *  Use Talkie Voice(true, false); if you only need not inverted pin or if you want to use SPI on ATmega328 which needs pin 11.

@@ -31,9 +31,6 @@
 
 #include "Talkie.h"
 
-extern const uint8_t spPAUSE1[] PROGMEM;
-extern const uint8_t spPAUSE2[] PROGMEM;
-
 int8_t sayQNumber(Talkie * voice, long n);
 int8_t sayQFloat(Talkie * voice, float aFloat, int aDecimalPlaces, bool aSuppressLeadingZero = true, bool aSuppressTrailingZero =
         false);

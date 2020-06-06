@@ -14,8 +14,7 @@
 // They also have good expression.
 //
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+#include <Arduino.h>
 
 // ROM VM61005
 // In this file the original order of ROMs is kept.

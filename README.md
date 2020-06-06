@@ -75,8 +75,10 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 
 # Revision History
 ### Version 1.1.0
+- ESP32 support.
 - Teensy support.
 - Version number.
+- Renamed *.c to *.cpp files.
 - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
 - Added example *USDistanceToVoice*.
 - Added function `sayQVoltageVolts()`.
