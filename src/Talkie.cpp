@@ -33,11 +33,8 @@
  * Leonardo     9/PB5       10/PB6      1           4
  * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
  * Esplora      6/PD7       %           1           4
- * SAMD         14          %           TC5         DAC0
- * ESP8266      14 // D5    12 // D6    13 // D7    0
+ * Zero (SAMD)  A0          %           TC5         DAC0
  * ESP32        25          %           hw_timer_t  DAC0
- * BluePill     PB7         PB8         PB9         PA0
- * APOLLO3      11          12          13          A3
  * Teensy       12/14721    %         IntervalTimer analogWrite
  *
  *
@@ -93,7 +90,11 @@ static int8_t synthK1, synthK2;
 #else
 static int16_t synthK1, synthK2;
 #endif
+#ifdef USE_10_BIT_VALUES
+static int16_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
+#else
 static int8_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
+#endif
 
 #define ISR_RATIO (25000/ (1000000 / FS) ) // gives 200 for FS 8000 -> 40 Hz or 25 ms Sample update frequency
 
@@ -259,7 +260,7 @@ void Talkie::initializeHardware() {
     TCCR1B = _BV(WGM12) | _BV(CS10); // CTC mode, no prescale
     TCNT1 = 0;
 #if F_CPU <= 8000000L
-    TIMSK0 = 0; // // Tweak for 8 Mhz clock - must disable millis() interrupt
+    TIMSK0 = 0; // // Tweak for 8 MHz clock - must disable millis() interrupt
 #endif
     OCR1A = ((F_CPU + (FS / 2)) / FS) - 1;  // 'FS' Hz (w/rounding)
     OCR1B = ((F_CPU + (FS / 2)) / FS) - 1;// use the same value for register B
@@ -303,7 +304,7 @@ void Talkie::initializeHardware() {
     timerAlarmEnable(sESP32Timer);
 #if defined(DEBUG) && defined(ESP32)
     Serial.print("CPU frequency=");
-    Serial.print(getCpuFrequencyMhz());
+    Serial.print(getCpuFrequencyMHz());
     Serial.println("MHz");
     Serial.print("Timer clock frequency=");
     Serial.print(getApbFrequency());
@@ -328,7 +329,7 @@ void Talkie::initializeHardware() {
 void Talkie::terminateHardware() {
 #if defined(__AVR__)
 #  if F_CPU <= 8000000
-    TIMSK0 = _BV(TOIE0); // // Tweak for 8 Mhz clock - enable millis() interrupt again
+    TIMSK0 = _BV(TOIE0); // // Tweak for 8 MHz clock - enable millis() interrupt again
 #  endif
     TIMSK1 = 0; // disable interrupts
 
@@ -848,7 +849,7 @@ static void setNextSynthesizerData() {
 static void tcReset() {
     // Reset TCx
     TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
-    while (GCLK->STATUS.bit.SYNCBUSY)
+    while (TC5->COUNT16.STATUS.bit.SYNCBUSY)
         ;
     while (TC5->COUNT16.CTRLA.bit.SWRST)
         ;
@@ -865,7 +866,7 @@ static void tcEnd() {
 
 static void tcStart(uint32_t sampleRate) {
 // Enable GCLK for TCC2 and TC5 (timer counter input clock)
-    GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48Mhz
+    GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48MHz
     //    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
     //        ;
     tcReset();

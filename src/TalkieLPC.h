@@ -35,6 +35,7 @@
 
 // 353 bytes used for parameters
 #if !defined(USE_10_BIT_VALUES) // from TI5220
+// Low quality here
 // parameters based on TI2802 values
 static const uint8_t tmsEnergy[0x10] PROGMEM = {0, 2, 3, 4, 5, 7, 10, 15, 20, 32, 41, 57, 81, 114, 161, 255};
 static const uint8_t tmsPeriod[0x40] PROGMEM = {0, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
@@ -72,8 +73,9 @@ static const int8_t tmsK8[0x08] PROGMEM = {-64, -40, -16, 7, 31, 55, 79, 102};
 static const int8_t tmsK9[0x08] PROGMEM = {-64, -44, -24, -4, 16, 37, 57, 77};
 static const int8_t tmsK10[0x08] PROGMEM = {-51, -33, -15, 4, 22, 32, 59, 77};
 
-#else // TALKIE_HIGHQUALITY
+#else
 /*
+ * High quality here.
  * Original values for energy, period and K1 to K10 from TI5220 with 10 bit resolution for K1 to K10 | TI_5110_5220_LPC
  */
 static const uint8_t tmsEnergy[0x10] PROGMEM = {0, 1, 2, 3, 4, 6, 8, 11, 16, 23, 33, 47, 63, 85, 114, 0}; // TI_028X_LATER_ENERGY

@@ -38,6 +38,8 @@
 
 /*
  * Version 1.1.0 - 6/2020
+ * - SAMD support.
+ * - ESP32 support.
  * - Teensy support.
  * - Version number.
  * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.

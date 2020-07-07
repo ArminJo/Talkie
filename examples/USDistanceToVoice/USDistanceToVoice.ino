@@ -40,7 +40,7 @@
  * Leonardo     9/PB5       10/PB6      1           4
  * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
  * Esplora      6/PD7       %           1           4
- * SAMD         14          %           TC5         DAC0
+ * Zero (SAMD)  A0          %           TC5         DAC0
  * ESP32        25          %           hw_timer_t  DAC0
  * Teensy       12/14721    %         IntervalTimer analogWrite
  *
