@@ -24,13 +24,13 @@
 #ifndef SRC_ADCUTILS_H_
 #define SRC_ADCUTILS_H_
 
-#if defined(__AVR__)
+#if defined(__AVR__) && (! defined(__AVR_ATmega4809__))
 #include <Arduino.h>
 
-// PRESCALE4 => 13 * 4 = 52 microseconds per ADC conversion at 1 Mhz Clock => 19,2 kHz
+// PRESCALE4 => 13 * 4 = 52 microseconds per ADC conversion at 1 MHz Clock => 19,2 kHz
 #define ADC_PRESCALE2    1 // 26 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE4    2 // 52 microseconds per ADC conversion at 1 MHz
-// PRESCALE8 => 13 * 8 = 104 microseconds per ADC sample at 1 Mhz Clock => 9,6 kHz
+// PRESCALE8 => 13 * 8 = 104 microseconds per ADC sample at 1 MHz Clock => 9,6 kHz
 #define ADC_PRESCALE8    3 // 104 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE16   4 // 208 microseconds per ADC conversion at 1 MHz
 #define ADC_PRESCALE32   5 // 416 microseconds per ADC conversion at 1 MHz
@@ -53,15 +53,14 @@
  * After including this file you can not call the ATTinyCore readAnalog functions reliable, if you specify references other than default!
  */
 #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
-// defines are from Arduino.h, the can be used without bit reordering
-#ifdef ATTINY_CORE
+// defines are for ADCUtils.cpp, they can be used WITHOUT bit reordering
 #undef DEFAULT
 #undef EXTERNAL
 #undef INTERNAL1V1
 #undef INTERNAL
 #undef INTERNAL2V56
 #undef INTERNAL2V56_EXTCAP
-#endif
+
 #define DEFAULT 0
 #define EXTERNAL 4
 #define INTERNAL1V1 8
@@ -71,7 +70,7 @@
 
 #define SHIFT_VALUE_FOR_REFERENCE REFS2
 #define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1) | _BV(REFS2))
-#else
+#else // AVR_ATtiny85
 #define SHIFT_VALUE_FOR_REFERENCE REFS0
 #define MASK_FOR_ADC_REFERENCE (_BV(REFS0) | _BV(REFS1))
 #endif

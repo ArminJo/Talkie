@@ -45,6 +45,7 @@
  * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
  * - Added example *USDistanceToVoice*.
  * - Added function `sayQVoltageVolts()`.
+ * - Improved end handling to minimize clicks.
  *
  * Version 1.0.2 - 09-11/2019
  * - ATmega2560 supported and tested.

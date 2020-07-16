@@ -23,6 +23,17 @@
  *                                              at pin 5/PC6/!OC4A for Adafruit Circuit Playground Classic or Sparkfun Pro Micro board
  *                                              at pin 6/PD7/OC4D for Esplora board
  *
+ * OUTPUT FILTER:
+ *
+ *     C to avoid clicks   Low pass    DC decoupling (optional)
+ *                      _____
+ *  D3 >------||-------| 10k |---+---------||-------> to Power amplifier
+ *           100nF      -----    |        10nF
+ *                              ---
+ *                              --- 10 nF
+ *                               |
+ *                               |
+ *                               _ GND
  *
  * Pin mapping table for different platforms
  *
@@ -364,18 +375,18 @@ void Talkie::terminateHardware() {
     if (NonInvertedOutputPin) {
         // Reset pin 11 to input only if no active SPI detected
         if (!(SPCR & _BV(SPE))) {
+            pinMode(NonInvertedOutputPin, INPUT);
             // force initializing of tone library for the next time tone() is called.
 #ifndef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED // enable it to save Flash
             noTone(NonInvertedOutputPin);
 #endif
-            pinMode(NonInvertedOutputPin, INPUT);
         }
     }
     if (InvertedOutputPin) {
+        pinMode(InvertedOutputPin, INPUT);
 #ifndef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
         noTone(InvertedOutputPin);
 #endif
-        pinMode(InvertedOutputPin, INPUT);
     }
 #endif // (__AVR__)
 

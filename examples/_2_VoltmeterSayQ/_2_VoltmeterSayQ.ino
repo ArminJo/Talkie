@@ -34,7 +34,7 @@
  * Leonardo     9/PB5       10/PB6      1           4
  * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
  * Esplora      6/PD7       %           1           4
- * SAMD         14          %           TC5         DAC0
+ * Zero (SAMD)  A0          %           TC5         DAC0
  * ESP32        25          %           hw_timer_t  DAC0
  * Teensy       12/14721    %         IntervalTimer analogWrite
  */
@@ -82,7 +82,8 @@ void setup() {
 #endif
     Serial.print("Voice queue size is: ");
     Serial.println(Voice.sayQ(spPAUSE1)); // this initializes the queue and the hardware
-
+    Serial.println();
+    Serial.println("Telling voltage at pin A0");
 }
 
 void loop() {
@@ -112,4 +113,5 @@ void loop() {
     while (Voice.isTalking()) {
         ;
     }
+    delay(100);
 }

@@ -64,6 +64,19 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
 ## Schematic for voltmeter example
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)
 
+# OUTPUT FILTER
+```
+    C to avoid clicks   Low pass    DC decoupling (optional)
+                      _____
+  D3 >------||-------| 10k |---+---------||-------> to Power amplifier
+           100nF      -----    |        10nF
+                              ---
+                              --- 10 nF
+                               |
+                               |
+                               _ GND
+ ```
+
 # Modifying library properties
 To access the Arduino library files from a sketch, you have to first use *Sketch/Show Sketch Folder (Ctrl+K)* in the Arduino IDE.<br/>
 Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
@@ -83,6 +96,8 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
 - Added example *USDistanceToVoice*.
 - Added function `sayQVoltageVolts()`.
+- Improved end handling to minimize clicks.
+
 ### Version 1.0.2
 - ATmega2560 supported and tested
 - Always set pins to input when finishing, to avoid a click.
