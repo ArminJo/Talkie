@@ -241,12 +241,12 @@ void Talkie::initializeHardware() {
     if (NonInvertedOutputPin) {
         NonInvertedOutputPin = 3; // OC2B
         pinMode(NonInvertedOutputPin, OUTPUT);
-        TCCR2A |= _BV(COM2B1);// OC2B non-inverting mode
+        TCCR2A |= _BV(COM2B1); // OC2B non-inverting mode
     }
     if (InvertedOutputPin) {
         InvertedOutputPin = 11; // OC2A
         pinMode(InvertedOutputPin, OUTPUT);
-        TCCR2A |= _BV(COM2A1) | _BV(COM2A0);// OC2A inverting mode
+        TCCR2A |= _BV(COM2A1) | _BV(COM2A0); // OC2A inverting mode
     }
 #  define PWM_VALUE_DESTINATION OCR2B
 #  define PWM_INVERTED_VALUE_DESTINATION OCR2A
@@ -274,8 +274,8 @@ void Talkie::initializeHardware() {
     TIMSK0 = 0; // // Tweak for 8 MHz clock - must disable millis() interrupt
 #endif
     OCR1A = ((F_CPU + (FS / 2)) / FS) - 1;  // 'FS' Hz (w/rounding)
-    OCR1B = ((F_CPU + (FS / 2)) / FS) - 1;// use the same value for register B
-    TIMSK1 = _BV(OCIE1B);// enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
+    OCR1B = ((F_CPU + (FS / 2)) / FS) - 1;  // use the same value for register B
+    TIMSK1 = _BV(OCIE1B); // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 #define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin
@@ -400,7 +400,7 @@ Talkie::Talkie() { // @suppress("Class members should be properly initialized")
 #if defined(DAC_PIN)
     NonInvertedOutputPin = DAC_PIN; // initialize with DAC pin
 #else
-            NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
+    NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
 #endif
     InvertedOutputPin = TALKIE_USE_PIN_FLAG;
 
@@ -413,7 +413,7 @@ Talkie::Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin) { // @
 #if defined(DAC_PIN)
         NonInvertedOutputPin = DAC_PIN; // initialize with DAC pin
 #else
-                NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
+        NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
 #endif
     }
     if (aUseInvertedOutputPin) {
@@ -582,9 +582,9 @@ void Talkie::resetFIFO() {
 /*
  * On Arduino disables/enables pin 11 as inverted PWM output ( in order to increase the volume, if speaker is attached between 3 and 11)
  */
-void Talkie::doNotUseUseInvertedOutput(bool aDoNotUseInvertedOutput) {
+void Talkie::doNotUseInvertedOutput(bool aDoNotUseInvertedOutput) {
     if (aDoNotUseInvertedOutput) {
-        InvertedOutputPin = 0;
+        InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG;
     } else {
         InvertedOutputPin = TALKIE_USE_PIN_FLAG;
     }
@@ -598,6 +598,20 @@ void Talkie::doNotUseNonInvertedOutput(bool aDoNotUseNonInvertedOutput) {
         NonInvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG;
     } else {
         NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
+    }
+}
+
+void Talkie::digitalWriteInvertedOutput(uint8_t aValue) {
+    if (InvertedOutputPin != 0) {
+        pinMode(InvertedOutputPin, OUTPUT);
+        digitalWrite(InvertedOutputPin, aValue);
+    }
+}
+
+void Talkie::digitalWriteNonInvertedOutput(uint8_t aValue) {
+    if (NonInvertedOutputPin != 0) {
+        pinMode(NonInvertedOutputPin, OUTPUT);
+        digitalWrite(NonInvertedOutputPin, aValue);
     }
 }
 
@@ -810,50 +824,50 @@ void TC5_Handler(void) __attribute__ ((weak, alias("timerInterrupt")));
  */
 static void setNextSynthesizerData() {
 // 396 byte compiled
-    uint8_t energy = sPointerToTalkieForISR->getBits(4);
+uint8_t energy = sPointerToTalkieForISR->getBits(4);
 // Read speech data, processing the variable size frames.
-    if (energy == 0) {
+if (energy == 0) {
 // Energy = 0: rest frame
-        synthEnergy = 0;
-    } else if (energy == 0xf) { // Energy = 15: stop frame. Silence the synthesizer and get new data.
-        synthEnergy = 0;
-        synthK1 = 0;
-        synthK2 = 0;
-        synthK3 = 0;
-        synthK4 = 0;
-        synthK5 = 0;
-        synthK6 = 0;
-        synthK7 = 0;
-        synthK8 = 0;
-        synthK9 = 0;
-        synthK10 = 0;
+    synthEnergy = 0;
+} else if (energy == 0xf) { // Energy = 15: stop frame. Silence the synthesizer and get new data.
+    synthEnergy = 0;
+    synthK1 = 0;
+    synthK2 = 0;
+    synthK3 = 0;
+    synthK4 = 0;
+    synthK5 = 0;
+    synthK6 = 0;
+    synthK7 = 0;
+    synthK8 = 0;
+    synthK9 = 0;
+    synthK10 = 0;
 
 // Get next word from FIFO
-        sPointerToTalkieForISR->setPtr(sPointerToTalkieForISR->FIFOPopFront());
+    sPointerToTalkieForISR->setPtr(sPointerToTalkieForISR->FIFOPopFront());
 
-    } else {
-        uint8_t repeat;
-        synthEnergy = pgm_read_byte(&tmsEnergy[energy]);
-        repeat = sPointerToTalkieForISR->getBits(1);
-        synthPeriod = pgm_read_byte(&tmsPeriod[sPointerToTalkieForISR->getBits(6)]); // 11 bits up to here
+} else {
+    uint8_t repeat;
+    synthEnergy = pgm_read_byte(&tmsEnergy[energy]);
+    repeat = sPointerToTalkieForISR->getBits(1);
+    synthPeriod = pgm_read_byte(&tmsPeriod[sPointerToTalkieForISR->getBits(6)]); // 11 bits up to here
 // A repeat frame uses the last coefficients
-        if (!repeat) {
-            // All frames use the first 4 coefficients
-            synthK1 = pgm_read_word(&tmsK1[sPointerToTalkieForISR->getBits(5)]);
-            synthK2 = pgm_read_word(&tmsK2[sPointerToTalkieForISR->getBits(5)]);
-            synthK3 = pgm_read_byte(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
-            synthK4 = pgm_read_byte(&tmsK4[sPointerToTalkieForISR->getBits(4)]);        // 29 bits up to here
-            if (synthPeriod) {
-                // Voiced frames use 6 extra coefficients.
-                synthK5 = pgm_read_byte(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
-                synthK6 = pgm_read_byte(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
-                synthK7 = pgm_read_byte(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
-                synthK8 = pgm_read_byte(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
-                synthK9 = pgm_read_byte(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
-                synthK10 = pgm_read_byte(&tmsK10[sPointerToTalkieForISR->getBits(3)]);        // 50 bits up to here
-            }
+    if (!repeat) {
+        // All frames use the first 4 coefficients
+        synthK1 = pgm_read_word(&tmsK1[sPointerToTalkieForISR->getBits(5)]);
+        synthK2 = pgm_read_word(&tmsK2[sPointerToTalkieForISR->getBits(5)]);
+        synthK3 = pgm_read_byte(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
+        synthK4 = pgm_read_byte(&tmsK4[sPointerToTalkieForISR->getBits(4)]);        // 29 bits up to here
+        if (synthPeriod) {
+            // Voiced frames use 6 extra coefficients.
+            synthK5 = pgm_read_byte(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
+            synthK6 = pgm_read_byte(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
+            synthK7 = pgm_read_byte(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
+            synthK8 = pgm_read_byte(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
+            synthK9 = pgm_read_byte(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
+            synthK10 = pgm_read_byte(&tmsK10[sPointerToTalkieForISR->getBits(3)]);        // 50 bits up to here
         }
     }
+}
 }
 
 #if defined(ARDUINO_ARCH_SAMD)

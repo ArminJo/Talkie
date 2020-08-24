@@ -60,8 +60,8 @@ jobs:
           ENV_ARDUINO_PLATFORM: ${{ matrix.arduino-platform }}
           ENV_PLATFORM_URL: ${{ matrix.platform-url }}
 #          ENV_REQUIRED_LIBRARIES: ${{ env.REQUIRED_LIBRARIES }}
-#          ENV_EXAMPLES_EXCLUDE: ${{ matrix.examples-exclude }}
-#          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.examples-build-properties) }}
+#          ENV_EXAMPLES_EXCLUDE: ${{ matrix.sketches-exclude }}
+#          ENV_EXAMPLES_BUILD_PROPERTIES: ${{ toJson(matrix.build-properties) }}
         run: |
           wget --quiet https://raw.githubusercontent.com/ArminJo/arduino-test-compile/master/arduino-test-compile.sh
             ls -l arduino-test-compile.sh

@@ -32,11 +32,15 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.1.0"
+#define VERSION_TALKIE "1.2.0"
 #define VERSION_TALKIE_MAJOR 1
-#define VERSION_TALKIE_MINOR 1
+#define VERSION_TALKIE_MINOR 2
 
 /*
+ * Version 1.2.0 - 8/2020
+ * - Corrected wrong function name doNotUseUseInvertedOutput().
+ * - Added functions digitalWriteNonInvertedOutput() and digitalWriteInvertedOutput().
+ *
  * Version 1.1.0 - 6/2020
  * - SAMD support.
  * - ESP32 support.
@@ -95,8 +99,10 @@ public:
 
     void initializeHardware();
     void terminateHardware();
-    void doNotUseUseInvertedOutput(bool aDoNotUseInvertedOutput = true);
+    void doNotUseInvertedOutput(bool aDoNotUseInvertedOutput = true);
     void doNotUseNonInvertedOutput(bool aDoNotUseNonInvertedOutput = true);
+    void digitalWriteInvertedOutput(uint8_t aValue);
+    void digitalWriteNonInvertedOutput(uint8_t aValue);
 
     // Output pins to use. 0xFF -> Enable output (default). 0 -> Disable output.
     uint8_t NonInvertedOutputPin; // Pin number of output, maybe fixed for some boards. On Arduino enables pin 3 (Talkie default) as PWM output. 0xFF -> Enable output (default). 0 -> Disable output.
