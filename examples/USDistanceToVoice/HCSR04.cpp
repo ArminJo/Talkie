@@ -93,6 +93,7 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
 
 // need minimum 10 usec Trigger Pulse
     digitalWrite(sTriggerOutPin, HIGH);
+    // If in
 
     if (sHCSR04Mode == HCSR04_MODE_USE_1_PIN) {
         // do it AFTER digitalWrite to avoid spurious triggering by just switching pin to output
@@ -100,7 +101,7 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
     }
 
 #ifdef DEBUG
-    delay(2); // to see it on scope
+    delayMicroseconds(100); // to see it on scope
 #else
     delayMicroseconds(10);
 #endif

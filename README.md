@@ -1,7 +1,7 @@
 # [Talkie](https://github.com/ArminJo/Talkie)
 Available as Arduino library "Talkie"
 
-### [Version 1.2.0](https://github.com/ArminJo/Talkie/releases)
+### [Version 1.2.1](https://github.com/ArminJo/Talkie/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
@@ -31,11 +31,17 @@ YouTube Demonstration of Talkie voltmeter example
   - **ATmega32U4** as found on the **Leonardo** and **CircuitPlaygound** boards.
   - **ARM0** (but not tested) as found on the **SAMD**, **Teensy** and **Particle** boards.
   
-## Output pins for different ATmegas
- - ATmega328 (Uno and Nano): non inverted at pin 3, inverted at pin 11.
- - ATmega2560: non inverted at pin 6, inverted at pin 7.
- - ATmega32U4 (Leonardo): non inverted at pin 10, inverted at pin 9.
- - ATmega32U4 (CircuitPlaygound): only non inverted at pin 5.
+## Pin mapping table for different platforms
+| Platform | Normal | Inverted | 8kHz timer | PWM timer |
+|-|-|-|-|-|
+| AVR (Uno and Nano) | 3 | 11     | 1     |    2 |
+| ATmega2560  | 6/PH3    | 7/PH4  | 1     |    4 |
+| Leonardo    | 9/PB5    | 10/PB6 | 1     |    4 |
+| ProMicro    | 5/PC6    | %      | 1     |    4 |
+| Esplora     | 6/PD7    | %      | 1     |    4 |
+| Zero (SAMD) | A0       | %      | TC5   | DAC0 |
+| ESP32       | 25       | %      | hw_timer_t    | DAC0 |
+| Teensy      | 12/14721 | %      | IntervalTimer | analogWrite |
 
 ## Timer usage
 **Timer 1** (Servo timer) is used at all ATmegas for updating voice output data at 8 kHz.
@@ -87,6 +93,9 @@ If you are using Sloeber as your IDE, you can easily define global symbols at *P
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Revision History
+### Version 1.2.1
+- Removed blocking wait for ATmega32U4 Serial in examples.
+
 ### Version 1.2.0
 - Corrected wrong function name doNotUseUseInvertedOutput().
 - Added functions `digitalWriteNonInvertedOutput()` and `digitalWriteInvertedOutput()`.

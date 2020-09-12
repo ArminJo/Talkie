@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/ArminJo/Talkie"
   },
-  "version": "1.2.0",
+  "version": "1.2.1",
   "exclude": "pictures",
   "authors": {
     "name": "Armin Joachimsmeyer",
