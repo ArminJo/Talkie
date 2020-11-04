@@ -134,7 +134,7 @@ IntervalTimer sIntervalTimer;
 
 #elif  defined(ESP32)
 #include <driver/dac.h>
-static hw_timer_t * sESP32Timer = NULL;
+static hw_timer_t *sESP32Timer = NULL;
 #  define _8_BIT_OUTPUT
 #  define DAC_PIN 25 // Or 26
 
@@ -429,7 +429,7 @@ void Talkie::beginPWM(uint8_t aPinPWM) {
     NonInvertedOutputPin = aPinPWM;
 }
 
-void Talkie::setPtr(const uint8_t * aAddress) {
+void Talkie::setPtr(const uint8_t *aAddress) {
     WordDataPointer = aAddress;
     WordDataBit = 0;
 }
@@ -520,7 +520,7 @@ void Talkie::FIFOPushBack(const uint8_t *aAddress) {
  * Get next element from queue (front)
  * returns next element from queue or 0
  */
-const uint8_t * Talkie::FIFOPopFront() {
+const uint8_t *Talkie::FIFOPopFront() {
 // 56 bytes compiled
     const uint8_t *addr = 0;    // returns 0 if empty.
     if (free < FIFO_BUFFER_SIZE) {
@@ -565,7 +565,7 @@ void Talkie::terminate() {
 /*
  * The blocking version
  */
-void Talkie::say(const uint8_t * aWordDataAddress) {
+void Talkie::say(const uint8_t *aWordDataAddress) {
     sayQ(aWordDataAddress);
     wait();
 }
@@ -622,7 +622,7 @@ void Talkie::digitalWriteNonInvertedOutput(uint8_t aValue) {
  * If stopped it starts the speech output.
  * if aWordDataAddress is 0 it just clears the queue.
  */
-int8_t Talkie::sayQ(const uint8_t * aWordDataAddress) {
+int8_t Talkie::sayQ(const uint8_t *aWordDataAddress) {
 
     if (aWordDataAddress == 0) {
         // Caller asked to have queue made empty and sound stopped

@@ -32,11 +32,14 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.2.0"
+#define VERSION_TALKIE "1.2.1"
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 2
 
 /*
+ * Version 1.2.1
+ * - Removed blocking wait for ATmega32U4 Serial in examples.
+ *
  * Version 1.2.0 - 8/2020
  * - Corrected wrong function name doNotUseUseInvertedOutput().
  * - Added functions digitalWriteNonInvertedOutput() and digitalWriteInvertedOutput().
@@ -73,10 +76,10 @@
 
 #if defined(__AVR__)
 #if !defined(__AVR_ATmega32U4__) && !defined(TCCR2A)
-#error "Sorry, when using an AVR chip, Talkie requires Timer2.  This board doesn't have one."
+#error Sorry, when using an AVR chip, Talkie requires Timer2.  This board does not have one.
 #endif
 #if F_CPU < 8000000L
-#error "F_CPU must be at least 8 MHz"
+#error F_CPU must be at least 8 MHz
 #endif
 #endif // (__AVR__)
 
@@ -90,8 +93,8 @@ public:
     Talkie();
     Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);
     void beginPWM(uint8_t aPinPWM); // // To be compatible to Teensy library
-    void say(const uint8_t * aWordDataAddress); // Blocking version
-    int8_t sayQ(const uint8_t * aWordDataAddress); // Queuing version. Returns free space in FIFO
+    void say(const uint8_t *aWordDataAddress); // Blocking version
+    int8_t sayQ(const uint8_t *aWordDataAddress); // Queuing version. Returns free space in FIFO
     void wait(); // wait for sayQ to end
     void stop(); // allow the actual word to end -> only clears the FIFO guarded with cli and sei
     void terminate(); // terminate synthesizer directly
@@ -114,7 +117,7 @@ public:
     uint8_t getNumberOfWords(); // Returns 0 if nothing to play, otherwise the number of the queued items plus the one which is active.
     bool isTalking();
     uint8_t getBits(uint8_t bits);
-    void setPtr(const uint8_t * aAddress);
+    void setPtr(const uint8_t *aAddress);
     void FIFOPushBack(const uint8_t *aAddress); // only sayQ() calls this
     const uint8_t * FIFOPopFront(); // only sayISR() calls this
 
