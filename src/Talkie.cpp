@@ -80,8 +80,8 @@
 #define TIMING_PIN 12
 #endif
 
-// If you do not use the Tone library, then activating can save up to 844 bytes program size :-)
-//#define NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
+// If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size :-)
+//#define NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED
 
 /*
  * Use 8bit coefficients K1 and K2.
@@ -377,14 +377,14 @@ void Talkie::terminateHardware() {
         if (!(SPCR & _BV(SPE))) {
             pinMode(NonInvertedOutputPin, INPUT);
             // force initializing of tone library for the next time tone() is called.
-#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED // enable it to save Flash
+#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED // enable it to save Flash
             noTone(NonInvertedOutputPin);
 #endif
         }
     }
     if (InvertedOutputPin) {
         pinMode(InvertedOutputPin, INPUT);
-#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_NEEDED
+#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED
         noTone(InvertedOutputPin);
 #endif
     }

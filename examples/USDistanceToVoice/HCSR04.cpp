@@ -4,6 +4,8 @@
  *  US Sensor (HC-SR04) functions.
  *  The non blocking functions are using pin change interrupts and need the PinChangeInterrupt library to be installed.
  *
+ *  58,23 us per centimeter and 17,17 cm/ms (forth and back).
+ *
  *  Supports 1 Pin mode as you get on the HY-SRF05 if you connect OUT to ground.
  *  You can modify the HC-SR04 modules to 1 Pin mode by:
  *  Old module with 3 16 pin chips: Connect Trigger and Echo direct or use a resistor < 4.7 kOhm.
@@ -85,6 +87,7 @@ void initUSDistancePin(uint8_t aTriggerOutEchoInPin) {
 
 /*
  * Start of standard blocking implementation using pulseInLong() since PulseIn gives wrong (too small) results :-(
+ * @return 0 if uninitialized or timeout happened
  */
 unsigned int getUSDistance(unsigned int aTimeoutMicros) {
     if (sHCSR04Mode == HCSR04_MODE_UNITITIALIZED) {
@@ -93,7 +96,6 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
 
 // need minimum 10 usec Trigger Pulse
     digitalWrite(sTriggerOutPin, HIGH);
-    // If in
 
     if (sHCSR04Mode == HCSR04_MODE_USE_1_PIN) {
         // do it AFTER digitalWrite to avoid spurious triggering by just switching pin to output
@@ -126,6 +128,7 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
      *
      * Use pulseInLong, this uses micros() as counter, relying on interrupts being enabled, which is not disturbed by (e.g. the 1 ms timer) interrupts.
      * Only thing is that the pulse ends when we are in an interrupt routine, thus prolonging the measured pulse duration.
+     * I measured 6 us for the millis() and 14 to 20 us for the Servo signal generating interrupt. This is equivalent to around 1 to 3 mm distance.
      * Alternatively we can use pulseIn() in a noInterrupts() context, but this will effectively stop the millis() timer for duration of pulse / or timeout.
      */
 #if ! defined(__AVR__) || defined(TEENSYDUINO) || defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny87__) || defined(__AVR_ATtiny167__)
@@ -135,10 +138,6 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
 #else
     unsigned long tUSPulseMicros = pulseInLong(tEchoInPin, HIGH, aTimeoutMicros);
 #endif
-    if (tUSPulseMicros == 0) {
-// timeout happened -> change value to timeout value. This eases comparison with different distances.
-        tUSPulseMicros = aTimeoutMicros;
-    }
     return tUSPulseMicros;
 }
 
@@ -149,18 +148,13 @@ unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros) {
 
 /*
  * @return  Distance in centimeter @20 degree (time in us/58.25)
- *          aTimeoutMicros/58.25 if timeout happens
- *          0 if pins are not initialized
+ *          0 if timeout or pins are not initialized
+ *
  *          timeout of 5825 micros is equivalent to 1 meter
  *          Default timeout of 20000 micro seconds is 3.43 meter
  */
 unsigned int getUSDistanceAsCentiMeter(unsigned int aTimeoutMicros) {
-    unsigned int tDistanceMicros = getUSDistance(aTimeoutMicros);
-    if (tDistanceMicros == 0) {
-// timeout happened
-        tDistanceMicros = aTimeoutMicros;
-    }
-    return (getCentimeterFromUSMicroSeconds(tDistanceMicros));
+    return (getCentimeterFromUSMicroSeconds(getUSDistance(aTimeoutMicros)));
 }
 
 // 58,23 us per centimeter (forth and back)
@@ -170,6 +164,10 @@ unsigned int getUSDistanceAsCentiMeterWithCentimeterTimeout(unsigned int aTimeou
     return getUSDistanceAsCentiMeter(tTimeoutMicros);
 }
 
+/*
+ * Trigger US sensor as fast as sensible if called in a loop to test US devices.
+ * trigger pulse is equivalent to 10 cm and then we wait for 20 ms / 3.43 meter
+ */
 void testUSSensor(uint16_t aSecondsToTest) {
     for (long i = 0; i < aSecondsToTest * 50; ++i) {
         digitalWrite(sTriggerOutPin, HIGH);

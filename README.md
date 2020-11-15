@@ -57,7 +57,7 @@ YouTube Demonstration of Talkie voltmeter example
 - I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a capacitor of 1 to 10 uF do block the DC current. The AC current is proportional to the rectance of the speaker, not its resistance in Ohm, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud - what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker.
 
 ## Own vocabulary
-To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) or [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
+To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) like described [here](https://youtu.be/KQseCA0nftI) or the [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
 
 Another way to create LPC data is to use [Qboxpro](http://ftp.whtech.com/pc%20utilities/qboxpro.zip), an unsupported old Windows application running under XP, which can produce Talkie compatible data streams. The missing BWCC.DLL (Borland Windows Custom Control Library) can be found e.g. [here](http://www.download-dll.com/dll-BWCC.dll.html).
 The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell&ss=9&i=2) and goes like this:
