@@ -83,13 +83,22 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
                                _ GND
  ```
 
-# Modifying library properties
-To access the Arduino library files from a sketch, you have to first use *Sketch/Show Sketch Folder (Ctrl+K)* in the Arduino IDE.<br/>
-Then navigate to the parallel `libraries` folder and select the library you want to access.<br/>
-The library files itself are located in the `src` sub-directory.<br/>
-If you did not yet store the example as your own sketch, then with *Ctrl+K* you are instantly in the right library folder.
-## Consider to use [Sloeber](http://eclipse.baeyens.it/stable.php?OS=Windows) as IDE
-If you are using Sloeber as your IDE, you can easily define global symbols at *Properties/Arduino/CompileOptions*.<br/>
+# Compile options / macros for this library
+To customize the software to different car extensions, there are some compile options / macros available.<br/>
+Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for gobal compile (the latter is not possible with the Arduino IDE, so consider to use [Sloeber](https://eclipse.baeyens.it).<br/>
+| Option | Default | File | Description |
+|-|-|-|-|
+| `NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED` | disabled | Talkie.h | If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size. |
+| `FAST_8BIT_MODE` | disabled | Talkie.h | If defined we use 8bit instead of 16 bit coefficients K1 and K2. This saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega and has almost the same quality, except of a few "dropouts" e.g. in the word "thousand". |
+
+### Modifying compile options with Arduino IDE
+First use *Sketch/Show Sketch Folder (Ctrl+K)*.<br/>
+If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
+Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
+In both cases the library files itself are located in the `src` directory.<br/>
+
+### Modifying compile options with Sloeber IDE
+If you are using Sloeber as your IDE, you can easily define global symbols with *Properties/Arduino/CompileOptions*.<br/>
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Revision History

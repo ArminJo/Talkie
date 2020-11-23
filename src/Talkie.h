@@ -36,6 +36,16 @@
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 2
 
+// If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size :-)
+//#define NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED
+
+/*
+ * Use 8bit coefficients K1 and K2.
+ * Saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega
+ * has almost the same quality, except of a few "dropouts" e.g. in the word "thousand"
+ */
+//#define FAST_8BIT_MODE
+
 /*
  * Version 1.2.1
  * - Removed blocking wait for ATmega32U4 Serial in examples.
