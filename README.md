@@ -52,7 +52,7 @@ YouTube Demonstration of Talkie voltmeter example
 - The library uses Timer 1 and Timer 2 on ATmega328, so libraries like Tone, Servo, analogWrite(), and some other libraries cannot be used while speaking.
 - After a call to `say...()` you can use `tone()` again.
 - To use Servo `write()` after a call to say... you must `detach()` and `attach()` the servo before first `write()` in order to initialize the timer again for Servo.
-- If you want to use **SPI** functions on ATmega328 **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseUseInvertedOutput();`.
+- If you want to use **SPI** functions on ATmega328 **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseInvertedOutput();`.
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
 - I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a capacitor of 1 to 10 uF do block the DC current. The AC current is proportional to the rectance of the speaker, not its resistance in Ohm, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud - what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker.
 

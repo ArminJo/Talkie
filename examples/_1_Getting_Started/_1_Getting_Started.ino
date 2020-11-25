@@ -30,7 +30,7 @@
 Talkie voice;
 
 void setup() {
-//    voice.doNotUseUseInvertedOutput();
+//    voice.doNotUseInvertedOutput();
 #if defined(TEENSYDUINO)
     pinMode(5, OUTPUT);
     digitalWrite(5, HIGH); //Enable Amplified PROP shield

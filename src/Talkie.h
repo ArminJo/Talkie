@@ -27,14 +27,15 @@
  *
  */
 
-#ifndef _Talkie_h_
-#define _Talkie_h_
+#ifndef TALKIE_H_
+#define TALKIE_H_
 
 #include <inttypes.h>
 
 #define VERSION_TALKIE "1.2.1"
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 2
+// The change log is at the bottom of the file
 
 // If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size :-)
 //#define NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED
@@ -45,40 +46,6 @@
  * has almost the same quality, except of a few "dropouts" e.g. in the word "thousand"
  */
 //#define FAST_8BIT_MODE
-
-/*
- * Version 1.2.1
- * - Removed blocking wait for ATmega32U4 Serial in examples.
- *
- * Version 1.2.0 - 8/2020
- * - Corrected wrong function name doNotUseUseInvertedOutput().
- * - Added functions digitalWriteNonInvertedOutput() and digitalWriteInvertedOutput().
- *
- * Version 1.1.0 - 6/2020
- * - SAMD support.
- * - ESP32 support.
- * - Teensy support.
- * - Version number.
- * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
- * - Added example *USDistanceToVoice*.
- * - Added function `sayQVoltageVolts()`.
- * - Improved end handling to minimize clicks.
- *
- * Version 1.0.2 - 09-11/2019
- * - ATmega2560 supported and tested.
- * - Always set pins to input when finishing, to avoid a click.
- *
- * Version 1.0.1 - 09/2019
- * - Added SPI compatibility (after speaking do not reset pin 11 to input if SPI detected).
- *
- * Version 1.0.0 - 11/2018
- *  - Fix the ISR_RATIO Bug for plain Arduino
- *  - Added a lot of comments and do refactoring to better understand the functionality
- *  - Added stopping timer1 interrupts at every end of speech to free resources for usage of Arduino tone library
- *  - Extracted initializeHardware() function
- *  - Added some utility functions, extracted from the examples.
- *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
- */
 
 #if F_CPU > 16000000L
 #define TALKIE_HIGHQUALITY
@@ -144,4 +111,41 @@ private:
     uint8_t rev(uint8_t a);
 };
 
-#endif
+/*
+ * Version 1.2.1
+ * - Removed blocking wait for ATmega32U4 Serial in examples.
+ *
+ * Version 1.2.0 - 8/2020
+ * - Corrected wrong function name doNotUseUseInvertedOutput().
+ * - Added functions digitalWriteNonInvertedOutput() and digitalWriteInvertedOutput().
+ *
+ * Version 1.1.0 - 6/2020
+ * - SAMD support.
+ * - ESP32 support.
+ * - Teensy support.
+ * - Version number.
+ * - Added function `sayQTimeout()` in *TalkieUtils.cpp*.
+ * - Added example *USDistanceToVoice*.
+ * - Added function `sayQVoltageVolts()`.
+ * - Improved end handling to minimize clicks.
+ *
+ * Version 1.0.2 - 09-11/2019
+ * - ATmega2560 supported and tested.
+ * - Always set pins to input when finishing, to avoid a click.
+ *
+ * Version 1.0.1 - 09/2019
+ * - Added SPI compatibility (after speaking do not reset pin 11 to input if SPI detected).
+ *
+ * Version 1.0.0 - 11/2018
+ *  - Fix the ISR_RATIO Bug for plain Arduino
+ *  - Added a lot of comments and do refactoring to better understand the functionality
+ *  - Added stopping timer1 interrupts at every end of speech to free resources for usage of Arduino tone library
+ *  - Extracted initializeHardware() function
+ *  - Added some utility functions, extracted from the examples.
+ *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
+ */
+
+#endif // TALKIE_H_
+
+#pragma once
+
