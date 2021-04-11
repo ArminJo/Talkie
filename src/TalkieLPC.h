@@ -11,9 +11,9 @@
  *  Copyright (C) 2018  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of Talkie_new https://github.com/ArminJo/Talkie_new.
+ *  This file is part of Talkie https://github.com/ArminJo/Talkie.
  *
- *  Talkie_new is free software: you can redistribute it and/or modify
+ *  Talkie is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -34,8 +34,7 @@
 #include <inttypes.h>
 
 // 353 bytes used for parameters
-#if !defined(USE_10_BIT_VALUES) // from TI5220
-// Low quality here
+#if !defined(USE_10_BIT_KOEFFICIENT_VALUES) // from TI5220
 // parameters based on TI2802 values
 static const uint8_t tmsEnergy[0x10] PROGMEM = {0, 2, 3, 4, 5, 7, 10, 15, 20, 32, 41, 57, 81, 114, 161, 255};
 static const uint8_t tmsPeriod[0x40] PROGMEM = {0, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
@@ -75,7 +74,8 @@ static const int8_t tmsK10[0x08] PROGMEM = {-51, -33, -15, 4, 22, 32, 59, 77};
 
 #else
 /*
- * High quality here.
+ * In my opinion, the quality here is no way better than for 8 bit values even with 10 bit DAC.
+ * The only improvement is that tmsK1 and tmsK2 are also 10 bit now, but this is not of interest for implementation in software :-(.
  * Original values for energy, period and K1 to K10 from TI5220 with 10 bit resolution for K1 to K10 | TI_5110_5220_LPC
  */
 static const uint8_t tmsEnergy[0x10] PROGMEM = {0, 1, 2, 3, 4, 6, 8, 11, 16, 23, 33, 47, 63, 85, 114, 0}; // TI_028X_LATER_ENERGY
@@ -85,6 +85,7 @@ static const uint8_t tmsPeriod[0x40] PROGMEM = {0, 15, 16, 17, 18, 19, 20, 21, 2
 
 static const int16_t tmsK1[0x20] PROGMEM = {-501, -498, -497, -495, -493, -491, -488, -482, -478, -474, -469, -464, -459, -452, -445, -437, -412, -380, -339, -288, -227, -158, -81, -1, 80, 157, 226, 287, 337, 379, 411, 436};
 static const int16_t tmsK2[0x20] PROGMEM = {-328, -303, -274, -244, -211, -175, -138, -99, -59, -18, 24, 64, 105, 143, 180, 215, 248, 278, 306, 331, 354, 374, 392, 408, 422, 435, 445, 455, 463, 470, 476, 506};
+
 static const int16_t tmsK3[0x10] PROGMEM = {-441, -387, -333, -279, -225, -171, -117, -63, -9, 45, 98, 152, 206, 260, 314, 368};
 static const int16_t tmsK4[0x10] PROGMEM = {-328, -273, -217, -161, -106, -50, 5, 61, 116, 172, 228, 283, 339, 394, 450, 506};
 static const int16_t tmsK5[0x10] PROGMEM = {-328, -282, -235, -189, -142, -96, -50, -3, 43, 90, 136, 182, 229, 275, 322, 368};
@@ -99,17 +100,16 @@ static const int16_t tmsK10[0x08] PROGMEM = {-205, -132, -59, 14, 87, 160, 234, 
 //static uint8_t chirp[] = { 0x00, 0x2a, 0xd4, 0x32, 0xb2, 0x12, 0x25, 0x14, 0x02, 0xe1, 0xc5, 0x02, 0x5f, 0x5a, 0x05, 0x0f, 0x26,
 //        0xfc, 0xa5, 0xa5, 0xd6, 0xdd, 0xdc, 0xfc, 0x25, 0x2b, 0x22, 0x21, 0x0f, 0xff, 0xf8, 0xee, 0xed, 0xef, 0xf7, 0xf6, 0xfa,
 //        0x00, 0x03, 0x02, 0x01 };
-// The one used in TI chips > TI2802 | TI_LATER_CHIRP
+// The one used in TI chips > TI2802
 static int8_t chirp[] = { 0x00, 0x03, 0x0f, 0x28, 0x4c, 0x6c, 0x71, 0x50, 0x25, 0x26, 0x4c, 0x44, 0x1a, 0x32, 0x3b, 0x13, 0x37,
         0x1a, 0x25, 0x1f, 0x1d };
-#define CHIRP_SIZE sizeof(chirp) // is padded with zeros by software
 
 /*
  * Interpolation shift coefficients | TI_INTERP
- * Not used for AVR implementation
+ * For future use
  */
 #if !defined(__AVR__)
-static int8_t interploation_shift[] = { 0, 3, 3, 3, 2, 2, 1, 1 };
+//static int8_t interploation_shift[] = { 0, 3, 3, 3, 2, 2, 1, 1 };
 #endif
 
 #endif /* SRC_LIB_TALKIE_TALKIELPC_H_ */

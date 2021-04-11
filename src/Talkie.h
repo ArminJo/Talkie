@@ -10,9 +10,9 @@
  *  Copyright (C) 2018  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of Talkie_new https://github.com/ArminJo/Talkie_new.
+ *  This file is part of Talkie https://github.com/ArminJo/Talkie.
  *
- *  Talkie_new is free software: you can redistribute it and/or modify
+ *  Talkie is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -32,7 +32,7 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.2.1"
+#define VERSION_TALKIE "1.2.2"
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 2
 // The change log is at the bottom of the file
@@ -47,13 +47,9 @@
  */
 //#define FAST_8BIT_MODE
 
-#if F_CPU > 16000000L
-#define TALKIE_HIGHQUALITY
-#endif
-
 #if defined(__AVR__)
 #if !defined(__AVR_ATmega32U4__) && !defined(TCCR2A)
-#error Sorry, when using an AVR chip, Talkie requires Timer2.  This board does not have one.
+#error Sorry, when using an AVR chip, Talkie requires Timer2. This board does not have one.
 #endif
 #if F_CPU < 8000000L
 #error F_CPU must be at least 8 MHz

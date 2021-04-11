@@ -17,6 +17,8 @@ YouTube Demonstration of Talkie voltmeter example
 
 [![Demonstration of Talkie voltmeter example](https://img.youtube.com/vi/6jXkugZTwCs/0.jpg)](https://www.youtube.com/watch?v=6jXkugZTwCs)
 
+[![Intoduction by Gadget Reboot](https://img.youtube.com/vi/O_yl5kcRO5w/0.jpg)](https://www.youtube.com/watch?v=O_yl5kcRO5w)
+
 ## Improvements to the original and to the non blocking version of PaulStoffregen
 - Improved code so Talkie now runs on **8 MHz** Arduino (with millis() interrupt disabled while talking).
 - Fixed the ISR_RATIO Bug for plain Arduino.
@@ -29,7 +31,8 @@ YouTube Demonstration of Talkie voltmeter example
   - **ATmega328** as found on the **Uno** and **Nano** boards.
   - **ATmega2560** as found on the **MEGA 2560** board.
   - **ATmega32U4** as found on the **Leonardo** and **CircuitPlaygound** boards.
-  - **ARM0** (but not tested) as found on the **SAMD**, **Teensy** and **Particle** boards.
+  - **ARM0** (Tested for Arduino Zero) as found on the **SAMD**, **Teensy** and **Particle** boards.
+  - **ESP32**.
   
 ## Pin mapping table for different platforms
 | Platform | Normal | Inverted | 8kHz timer | PWM timer |
@@ -51,10 +54,10 @@ YouTube Demonstration of Talkie voltmeter example
 - As **default** both inverted and not inverted outputs are enabled to **increase volume** if speaker is attached between them.
 - The library uses Timer 1 and Timer 2 on ATmega328, so libraries like Tone, Servo, analogWrite(), and some other libraries cannot be used while speaking.
 - After a call to `say...()` you can use `tone()` again.
-- To use Servo `write()` after a call to say... you must `detach()` and `attach()` the servo before first `write()` in order to initialize the timer again for Servo.
+- using [Sloeber]ervo `write()` after a call to say... you must `detach()` and `attach()` the servo before first `write()` in order to initialize the timer again for Servo.
 - If you want to use **SPI** functions on ATmega328 **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseInvertedOutput();`.
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
-- I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a capacitor of 1 to 10 uF do block the DC current. The AC current is proportional to the rectance of the speaker, not its resistance in Ohm, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud - what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker.
+- I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a series capacitor of 1 to 10 uF do block the DC current. Look for the right polarity. The AC current is proportional to the rectance of the speaker, not its resistance in Ohm, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud -what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker or a power amplifier.
 
 ## Own vocabulary
 To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) like described [here](https://youtu.be/KQseCA0nftI) or the [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
@@ -85,25 +88,27 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
 
 # Compile options / macros for this library
 To customize the software to different car extensions, there are some compile options / macros available.<br/>
-Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for gobal compile (the latter is not possible with the Arduino IDE, so consider to use [Sloeber](https://eclipse.baeyens.it).<br/>
+Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for global compile (the latter is not possible with the Arduino IDE, so consider using [Sloeber](https://eclipse.baeyens.it).<br/>
 | Option | Default | File | Description |
 |-|-|-|-|
 | `NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED` | disabled | Talkie.h | If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size. |
 | `FAST_8BIT_MODE` | disabled | Talkie.h | If defined we use 8bit instead of 16 bit coefficients K1 and K2. This saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega and has almost the same quality, except of a few "dropouts" e.g. in the word "thousand". |
 
 ### Modifying compile options with Arduino IDE
-First use *Sketch/Show Sketch Folder (Ctrl+K)*.<br/>
+First, use *Sketch > Show Sketch Folder (Ctrl+K)*.<br/>
 If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
 Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
 In both cases the library files itself are located in the `src` directory.<br/>
 
 ### Modifying compile options with Sloeber IDE
-If you are using Sloeber as your IDE, you can easily define global symbols with *Properties/Arduino/CompileOptions*.<br/>
+If you are using Sloeber as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Revision History
 ### Version 1.2.1
 - Removed blocking wait for ATmega32U4 Serial in examples.
+- 10 bit Coefficients are working noe, but they do not sound better :-(.
+- Tested on an ESP32.
 
 ### Version 1.2.0
 - Corrected wrong function name doNotUseUseInvertedOutput().

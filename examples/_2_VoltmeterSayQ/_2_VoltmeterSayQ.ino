@@ -6,9 +6,9 @@
  *  Copyright (C) 2011-2020  Peter Knight, Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of Talkie_new https://github.com/ArminJo/Talkie_new.
+ *  This file is part of Talkie https://github.com/ArminJo/Talkie.
  *
- *  Talkie_new is free software: you can redistribute it and/or modify
+ *  Talkie is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -48,7 +48,7 @@
 #include "ADCUtils.h" // for getVCCVoltage()
 #elif defined(ARDUINO_ARCH_SAMD)
 // On the Zero and others we switch explicitly to SerialUSB
-//#define Serial SerialUSB // This does not work for Zero
+#define Serial SerialUSB
 #endif
 
 /*
@@ -69,8 +69,8 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)
-    delay(2000); // To be able to connect Serial monitor after reset and before first printout
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
+    delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
     // Just to know which program is running on my Arduino
     Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_TALKIE));
@@ -81,10 +81,24 @@ void setup() {
 #elif defined(ARDUINO_ARCH_SAMD)
     analogReadResolution(12);
 #endif
-    Serial.print("Voice queue size is: ");
+    Serial.print(F("Voice queue size is: "));
     Serial.println(Voice.sayQ(spPAUSE1)); // this initializes the queue and the hardware
+#if defined(ARDUINO_ARCH_SAMD)
+    Serial.println(F("Read voltage at pin A1"));
+#else
+    Serial.println(F("Read voltage at pin A0"));
+#endif
+
+    Serial.print(F("Speech output at pin "));
+    Serial.print(Voice.NonInvertedOutputPin);
+
+    if (Voice.InvertedOutputPin && Voice.InvertedOutputPin != TALKIE_USE_PIN_FLAG) {
+        Serial.print(F(" and inverted output at pin "));
+        Serial.print(Voice.InvertedOutputPin);
+    }
     Serial.println();
-    Serial.println("Telling voltage at pin A0");
+    Serial.println();
+
 }
 
 void loop() {

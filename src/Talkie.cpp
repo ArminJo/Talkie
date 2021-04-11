@@ -52,9 +52,9 @@
  *  Copyright (C) 2018  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
- *  This file is part of Talkie_new https://github.com/ArminJo/Talkie_new.
+ *  This file is part of Talkie https://github.com/ArminJo/Talkie.
  *
- *  Talkie_new is free software: you can redistribute it and/or modify
+ *  Talkie is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -87,14 +87,15 @@
 static uint8_t synthPeriod;
 static uint16_t synthEnergy;
 
-#ifdef FAST_8BIT_MODE
+#if defined(USE_10_BIT_KOEFFICIENT_VALUES)
+static int32_t synthK1, synthK2;
+static int32_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
+#  else
+#  ifdef FAST_8BIT_MODE
 static int8_t synthK1, synthK2;
-#else
+#  else
 static int16_t synthK1, synthK2;
-#endif
-#ifdef USE_10_BIT_VALUES
-static int16_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
-#else
+#  endif
 static int8_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
 #endif
 
@@ -130,7 +131,7 @@ static hw_timer_t *sESP32Timer = NULL;
 #  define DAC_PIN 25 // Or 26
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
-#  define _12_BIT_OUTPUT
+#  define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
 #  define DAC_PIN DAC0 // PA02 + DAC1 on due
 // On the Zero and others we switch explicitly to SerialUSB
 //#define Serial SerialUSB
@@ -275,8 +276,8 @@ void Talkie::initializeHardware() {
     pinMode(CPLAY_SPEAKER_SHUTDOWN, OUTPUT);
     digitalWrite(CPLAY_SPEAKER_SHUTDOWN, HIGH);
 #  endif
-    analogWriteResolution(12);
-    analogWrite(ANALOG_WRITE_DESTINATION, 0); // really ???
+    analogWriteResolution(10); // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
+    analogWrite(ANALOG_WRITE_DESTINATION, 1 << 9); // DAC0
     tcStart(FS);
 
 #elif defined(ARDUINO_ARCH_STM32)
@@ -425,7 +426,7 @@ void Talkie::setPtr(const uint8_t *aAddress) {
     WordDataBit = 0;
 }
 
-/*
+/**
  * Returns 0 if nothing to play, otherwise the number of the queued items plus the one which is active.
  */
 uint8_t Talkie::getNumberOfWords() {
@@ -511,7 +512,7 @@ void Talkie::FIFOPushBack(const uint8_t *aAddress) {
  * Get next element from queue (front)
  * returns next element from queue or 0
  */
-const uint8_t *Talkie::FIFOPopFront() {
+const uint8_t* Talkie::FIFOPopFront() {
 // 56 bytes compiled
     const uint8_t *addr = 0;    // returns 0 if empty.
     if (free < FIFO_BUFFER_SIZE) {
@@ -665,13 +666,11 @@ extern "C" {
  * 50 microseconds with 4 simple optimizations (change ">>15" to "<<1) >>16")
  */
 #if defined(ESP8266)
-void ICACHE_RAM_ATTR timerInterrupt()
+ICACHE_RAM_ATTR
 #elif defined(ESP32)
-void IRAM_ATTR timerInterrupt()
-#else
-void timerInterrupt()
+IRAM_ATTR
 #endif
-{
+void timerInterrupt() {
 // 1286 byte compiled
 #ifdef MEASURE_TIMING
     digitalWriteFast(TIMING_PIN, HIGH);
@@ -683,9 +682,13 @@ void timerInterrupt()
     static uint16_t nextPwm;
 #endif
     static uint8_t periodCounter;
+#if defined(USE_10_BIT_KOEFFICIENT_VALUES)
+    static int32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9;
+    int32_t u0, u1, u2, u3, u4, u5, u6, u7, u8, u9, u10;
+#else
     static int16_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9;
-
     int16_t u0, u1, u2, u3, u4, u5, u6, u7, u8, u9, u10;
+#endif
 
     /*
      * First output the value
@@ -713,7 +716,7 @@ void timerInterrupt()
         } else {
             periodCounter = 0;
         }
-        if (periodCounter < CHIRP_SIZE) {
+        if (periodCounter < sizeof(chirp)) {
             // inject chirp values to u10
             u10 = ((chirp[periodCounter]) * (uint32_t) synthEnergy) >> 8;
         } else {
@@ -728,6 +731,7 @@ void timerInterrupt()
 
 // Lattice filter forward path -> fill temporary variables
 // rescale by shifting >> 7 because we have signed values here (for unsigned it would need >> 8)
+#if !defined(USE_10_BIT_KOEFFICIENT_VALUES)
     u9 = u10 - (((int16_t) synthK10 * x9) >> 7);
     u8 = u9 - (((int16_t) synthK9 * x8) >> 7);
     u7 = u8 - (((int16_t) synthK8 * x7) >> 7);
@@ -736,17 +740,30 @@ void timerInterrupt()
     u4 = u5 - (((int16_t) synthK5 * x4) >> 7);
     u3 = u4 - (((int16_t) synthK4 * x3) >> 7);
     u2 = u3 - (((int16_t) synthK3 * x2) >> 7);
-#ifdef FAST_8BIT_MODE
+#  ifdef FAST_8BIT_MODE
     u1 = u2 - (((int16_t) synthK2 * x1) >> 7);
     u0 = u1 - (((int16_t) synthK1 * x0) >> 7);
-#else
+#  else
 // the 4 changes from ">> 15" to "<<1) >> 16" save 25 us processing time at 16 MHz :-)
     u1 = u2 - ((((int32_t) synthK2 * x1) << 1) >> 16);
     u0 = u1 - ((((int32_t) synthK1 * x0) << 1) >> 16);
+#  endif
+#else
+
+    u9 = u10 - ((synthK10 * x9) >> 9);
+    u8 = u9 - ((synthK9 * x8) >> 9);
+    u7 = u8 - ((synthK8 * x7) >> 9);
+    u6 = u7 - ((synthK7 * x6) >> 9);
+    u5 = u6 - ((synthK6 * x5) >> 9);
+    u4 = u5 - ((synthK5 * x4) >> 9);
+    u3 = u4 - ((synthK4 * x3) >> 9);
+    u2 = u3 - ((synthK3 * x2) >> 9);
+    u1 = u2 - ((synthK2 * x1) >> 9);
+    u0 = u1 - ((synthK1 * x0) >> 9);
 #endif
 
 // Output clamp
-// Yes this happens generally seldom, but for spt_BUT it happens very often, which makes this sound unusable
+// Yes this happens generally seldom, but for "spt_BUT" it happens very often, which makes this sound unusable
     if (u0 > 511) {
         u0 = 511;
     }
@@ -755,6 +772,7 @@ void timerInterrupt()
     }
 
 // Lattice filter reverse path -> compute next x* values
+#if !defined(USE_10_BIT_KOEFFICIENT_VALUES)
     x9 = x8 + (((int16_t) synthK9 * u8) >> 7);
     x8 = x7 + (((int16_t) synthK8 * u7) >> 7);
     x7 = x6 + (((int16_t) synthK7 * u6) >> 7);
@@ -762,12 +780,23 @@ void timerInterrupt()
     x5 = x4 + (((int16_t) synthK5 * u4) >> 7);
     x4 = x3 + (((int16_t) synthK4 * u3) >> 7);
     x3 = x2 + (((int16_t) synthK3 * u2) >> 7);
-#ifdef FAST_8BIT_MODE
+#  ifdef FAST_8BIT_MODE
     x2 = x1 + (((int16_t) synthK2 * u1) >> 7);
     x1 = x0 + (((int16_t) synthK1 * u0) >> 7);
-#else
+#  else
     x2 = x1 + ((((int32_t) synthK2 * u1) << 1) >> 16);
     x1 = x0 + ((((int32_t) synthK1 * u0) << 1) >> 16);
+#  endif
+#else
+    x9 = x8 + ((synthK9 * u8) >> 9);
+    x8 = x7 + ((synthK8 * u7) >> 9);
+    x7 = x6 + ((synthK7 * u6) >> 9);
+    x6 = x5 + ((synthK6 * u5) >> 9);
+    x5 = x4 + ((synthK5 * u4) >> 9);
+    x4 = x3 + ((synthK4 * u3) >> 9);
+    x3 = x2 + ((synthK3 * u2) >> 9);
+    x2 = x1 + ((synthK2 * u1) >> 9);
+    x1 = x0 + ((synthK1 * u0) >> 9);
 #endif
 
     x0 = u0;
@@ -815,50 +844,65 @@ void TC5_Handler(void) __attribute__ ((weak, alias("timerInterrupt")));
  */
 static void setNextSynthesizerData() {
 // 396 byte compiled
-uint8_t energy = sPointerToTalkieForISR->getBits(4);
+    uint8_t energy = sPointerToTalkieForISR->getBits(4);
 // Read speech data, processing the variable size frames.
-if (energy == 0) {
+    if (energy == 0) {
 // Energy = 0: rest frame
-    synthEnergy = 0;
-} else if (energy == 0xf) { // Energy = 15: stop frame. Silence the synthesizer and get new data.
-    synthEnergy = 0;
-    synthK1 = 0;
-    synthK2 = 0;
-    synthK3 = 0;
-    synthK4 = 0;
-    synthK5 = 0;
-    synthK6 = 0;
-    synthK7 = 0;
-    synthK8 = 0;
-    synthK9 = 0;
-    synthK10 = 0;
+        synthEnergy = 0;
+    } else if (energy == 0xf) { // Energy = 15: stop frame. Silence the synthesizer and get new data.
+        synthEnergy = 0;
+        synthK1 = 0;
+        synthK2 = 0;
+        synthK3 = 0;
+        synthK4 = 0;
+        synthK5 = 0;
+        synthK6 = 0;
+        synthK7 = 0;
+        synthK8 = 0;
+        synthK9 = 0;
+        synthK10 = 0;
 
 // Get next word from FIFO
-    sPointerToTalkieForISR->setPtr(sPointerToTalkieForISR->FIFOPopFront());
+        sPointerToTalkieForISR->setPtr(sPointerToTalkieForISR->FIFOPopFront());
 
-} else {
-    uint8_t repeat;
-    synthEnergy = pgm_read_byte(&tmsEnergy[energy]);
-    repeat = sPointerToTalkieForISR->getBits(1);
-    synthPeriod = pgm_read_byte(&tmsPeriod[sPointerToTalkieForISR->getBits(6)]); // 11 bits up to here
+    } else {
+        uint8_t repeat;
+        synthEnergy = pgm_read_byte(&tmsEnergy[energy]);
+        repeat = sPointerToTalkieForISR->getBits(1);
+        synthPeriod = pgm_read_byte(&tmsPeriod[sPointerToTalkieForISR->getBits(6)]); // 11 bits up to here
 // A repeat frame uses the last coefficients
-    if (!repeat) {
-        // All frames use the first 4 coefficients
-        synthK1 = pgm_read_word(&tmsK1[sPointerToTalkieForISR->getBits(5)]);
-        synthK2 = pgm_read_word(&tmsK2[sPointerToTalkieForISR->getBits(5)]);
-        synthK3 = pgm_read_byte(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
-        synthK4 = pgm_read_byte(&tmsK4[sPointerToTalkieForISR->getBits(4)]);        // 29 bits up to here
-        if (synthPeriod) {
-            // Voiced frames use 6 extra coefficients.
-            synthK5 = pgm_read_byte(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
-            synthK6 = pgm_read_byte(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
-            synthK7 = pgm_read_byte(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
-            synthK8 = pgm_read_byte(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
-            synthK9 = pgm_read_byte(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
-            synthK10 = pgm_read_byte(&tmsK10[sPointerToTalkieForISR->getBits(3)]);        // 50 bits up to here
+        if (!repeat) {
+            // All frames use the first 4 coefficients
+            // cast with (int16_t) to support int32_t type for synthK1 etc. since pgm_read_word returns an unsigned value.
+            synthK1 = (int16_t) pgm_read_word(&tmsK1[sPointerToTalkieForISR->getBits(5)]);
+            synthK2 = (int16_t) pgm_read_word(&tmsK2[sPointerToTalkieForISR->getBits(5)]);
+#if !defined(USE_10_BIT_KOEFFICIENT_VALUES)
+            synthK3 = pgm_read_byte(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
+            synthK4 = pgm_read_byte(&tmsK4[sPointerToTalkieForISR->getBits(4)]);        // 29 bits up to here
+            if (synthPeriod) {
+                // Voiced frames use 6 extra coefficients.
+                synthK5 = pgm_read_byte(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
+                synthK6 = pgm_read_byte(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
+                synthK7 = pgm_read_byte(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
+                synthK8 = pgm_read_byte(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
+                synthK9 = pgm_read_byte(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
+                synthK10 = pgm_read_byte(&tmsK10[sPointerToTalkieForISR->getBits(3)]);        // 50 bits up to here
+            }
+#else
+            synthK3 = (int16_t) pgm_read_word(&tmsK3[sPointerToTalkieForISR->getBits(4)]);
+            synthK4 = (int16_t) pgm_read_word(&tmsK4[sPointerToTalkieForISR->getBits(4)]);
+            if (synthPeriod) {
+                // Voiced frames use 6 extra coefficients.
+                synthK5 = (int16_t) pgm_read_word(&tmsK5[sPointerToTalkieForISR->getBits(4)]);
+                synthK6 = (int16_t) pgm_read_word(&tmsK6[sPointerToTalkieForISR->getBits(4)]);
+                synthK7 = (int16_t) pgm_read_word(&tmsK7[sPointerToTalkieForISR->getBits(4)]);
+                synthK8 = (int16_t) pgm_read_word(&tmsK8[sPointerToTalkieForISR->getBits(3)]);
+                synthK9 = (int16_t) pgm_read_word(&tmsK9[sPointerToTalkieForISR->getBits(3)]);
+                synthK10 = (int16_t) pgm_read_word(&tmsK10[sPointerToTalkieForISR->getBits(3)]);
+            }
+#endif
         }
     }
-}
 }
 
 #if defined(ARDUINO_ARCH_SAMD)
@@ -875,7 +919,9 @@ static void tcEnd() {
     // Disable TC5
     TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
     tcReset();
-#if defined(_12_BIT_OUTPUT)
+#if defined _10_BIT_OUTPUT
+    analogWrite(DAC_PIN, 0x200);
+#elif defined(_12_BIT_OUTPUT)
     analogWrite(DAC_PIN, 0x800);
 #endif
 }

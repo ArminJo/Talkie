@@ -112,7 +112,8 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
 
     uint8_t tEchoInPin;
     if (sHCSR04Mode == HCSR04_MODE_USE_1_PIN) {
-        delayMicroseconds(10); // allow for 10 us low before switching to input which is high because of the modules pullup resistor.
+        // allow for 20 us low (20 us instead of 10 us also supports the JSN-SR04T) before switching to input which is high because of the modules pullup resistor.
+        delayMicroseconds(20);
         pinMode(sTriggerOutPin, INPUT);
         tEchoInPin = sTriggerOutPin;
     } else {
@@ -185,7 +186,7 @@ void testUSSensor(uint16_t aSecondsToTest) {
  * Result is in sUSDistanceCentimeter;
  */
 
-// Comment out the line according to the sEchoInPin if using the non blocking version
+// Activate the line according to the sEchoInPin if using the non blocking version
 // or define it as symbol for the compiler e.g. -DUSE_PIN_CHANGE_INTERRUPT_D0_TO_D7
 //#define USE_PIN_CHANGE_INTERRUPT_D0_TO_D7  // using PCINT2_vect - PORT D
 //#define USE_PIN_CHANGE_INTERRUPT_D8_TO_D13 // using PCINT0_vect - PORT B - Pin 13 is feedback output
