@@ -25,10 +25,10 @@
  *
  * OUTPUT FILTER:
  *
- *     C to avoid clicks   Low pass    DC decoupling (optional)
+ *     C to avoid clicks  Low pass 1600 Hz  DC decoupling (optional)
  *                      _____
- *  D3 >------||-------| 10k |---+---------||-------> to Power amplifier
- *           100nF      -----    |        10nF
+ *  D3 >------||-------| 10k |---+-----------||-------> to Power amplifier
+ *           100nF      -----    |          10nF
  *                              ---
  *                              --- 10 nF
  *                               |
@@ -73,16 +73,20 @@
 
 #include "Talkie.h"
 
-// Enable this if you want to measure timing by toggling pin12 on an arduino
-//#define MEASURE_TIMING
+// Enable this if you want to measure timing by toggling pin 8 on an arduino
+#define MEASURE_TIMING
 #ifdef MEASURE_TIMING
 #include "digitalWriteFast.h"
-#define TIMING_PIN 12
+#  if defined(ARDUINO_ARCH_STM32)
+#define TIMING_PIN PA8
+#  else
+#define TIMING_PIN 8
+#  endif
 #endif
 
 #include "TalkieLPC.h"
 
-#define FS 8000 // Speech engine sample rate
+#define SAMPLE_RATE 8000 // Speech engine sample rate
 
 static uint8_t synthPeriod;
 static uint16_t synthEnergy;
@@ -99,7 +103,7 @@ static int16_t synthK1, synthK2;
 static int8_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
 #endif
 
-#define ISR_RATIO (25000/ (1000000 / FS) ) // gives 200 for FS 8000 -> 40 Hz or 25 ms Sample update frequency
+#define ISR_RATIO (25000/ (1000000 / SAMPLE_RATE) ) // gives 200 for SAMPLE_RATE 8000 -> 40 Hz or 25 ms Sample update frequency
 
 #ifdef __cplusplus
 extern "C" {
@@ -132,15 +136,36 @@ static hw_timer_t *sESP32Timer = NULL;
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 #  define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
-#  define DAC_PIN DAC0 // PA02 + DAC1 on due
+#  define DAC_PIN DAC0   // PA02 + DAC1 on due
 // On the Zero and others we switch explicitly to SerialUSB
 //#define Serial SerialUSB
 // TC5
 static void tcStart(uint32_t sampleRate);
 static void tcEnd();
 
-#elif defined(__SAM3X8E__)  // Arduino DUE
+#elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1)
+#include <HardwareTimer.h> // 4 timers and 4. timer (4.channel) is used for tone()
+/*
+ * Use timer 3 as sample rate timer.
+ * Timer 3 blocks PA6, PA7, PB0, PB1, so if you require one of them as tone() or Servo output, you must choose another timer.
+ */
+HardwareTimer sSTM32Timer(3);
 
+#  define DAC_PIN PA3      // T2C4
+
+#elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
+#include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
+/*
+ * Use timer 4 as IRMP timer.
+ * Timer 4 blocks PB6, PB7, PB8, PB9, so if you require one of them as tone() or Servo output, you must choose another timer.
+ */
+#  if defined(TIM4)
+HardwareTimer sSTM32Timer(TIM4);
+#  else
+HardwareTimer sSTM32Timer(TIM2);
+#  endif
+
+#  define DAC_PIN PA3      // T2C4
 #endif
 
 static void setNextSynthesizerData();
@@ -251,9 +276,6 @@ void Talkie::initializeHardware() {
      * Common code for all AVR
      */
 // Setup sample rate Timer1
-#ifdef MEASURE_TIMING
-    pinMode(TIMING_PIN, OUTPUT);
-#endif
     /*
      * Unfortunately we can't calculate the next sample every PWM cycle
      * as the routine is too slow. So use Timer 1 to trigger that.
@@ -265,8 +287,8 @@ void Talkie::initializeHardware() {
 #if F_CPU <= 8000000L
     TIMSK0 = 0; // // Tweak for 8 MHz clock - must disable millis() interrupt
 #endif
-    OCR1A = ((F_CPU + (FS / 2)) / FS) - 1;  // 'FS' Hz (w/rounding)
-    OCR1B = ((F_CPU + (FS / 2)) / FS) - 1;  // use the same value for register B
+    OCR1A = ((F_CPU + (SAMPLE_RATE / 2)) / SAMPLE_RATE) - 1;  // 'SAMPLE_RATE' Hz (w/rounding)
+    OCR1B = ((F_CPU + (SAMPLE_RATE / 2)) / SAMPLE_RATE) - 1;  // use the same value for register B
     TIMSK1 = _BV(OCIE1B); // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
@@ -278,15 +300,11 @@ void Talkie::initializeHardware() {
 #  endif
     analogWriteResolution(10); // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
     analogWrite(ANALOG_WRITE_DESTINATION, 1 << 9); // DAC0
-    tcStart(FS);
-
-#elif defined(ARDUINO_ARCH_STM32)
-#define ANALOG_WRITE_DESTINATION D7
-    pinMode(ANALOG_WRITE_DESTINATION, PWM);
+    tcStart(SAMPLE_RATE);
 
 #elif defined(TEENSYDUINO)
     // common for all Teensy
-    sIntervalTimer.begin(timerInterrupt, 1000000L / FS);
+    sIntervalTimer.begin(timerInterrupt, 1000000L / SAMPLE_RATE);
 
 #  if defined(DAC_PIN)
 #  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
@@ -296,14 +314,13 @@ void Talkie::initializeHardware() {
     analogWriteFrequency(NonInvertedOutputPin,62500);
 #  endif // (DAC_PIN)
 
-#elif defined(ESP8266)
 #elif defined(ESP32)
 #  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
     // Use Timer1 with 1 microsecond resolution, main APB clock is 80MHZ
 #define APB_FREQUENCY_DIVIDER 80
     sESP32Timer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
     timerAttachInterrupt(sESP32Timer, timerInterrupt, true);
-    timerAlarmWrite(sESP32Timer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / FS, true);
+    timerAlarmWrite(sESP32Timer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
     timerAlarmEnable(sESP32Timer);
 #if defined(DEBUG) && defined(ESP32)
     Serial.print("CPU frequency=");
@@ -317,10 +334,41 @@ void Talkie::initializeHardware() {
 //    dac_output_enable(DAC_CHANNEL_1);
 //    dac_output_voltage(DAC_CHANNEL_1, 255);
 
-    // BluePill in 2 flavors
-#elif defined(STM32F1xx)   // for "Generic STM32F1 series" from STM32 Boards from STM32 cores of Arduino Board manager
+    // BluePill in 2 flavors see https://samuelpinches.com.au/3d-printer/cutting-through-some-confusion-on-stm32-and-arduino/
+#elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1) // Recommended original Arduino_STM32 by Roger Clark.
+    // STM32F1 architecture for "Generic STM32F103C series" from "STM32F1 Boards (Arduino_STM32)" of Arduino Board manager
+    // http://dan.drown.org/stm32duino/package_STM32duino_index.json
+#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
+    /*
+     * Set timer for interrupts at SAMPLE_RATE
+     */
+    sSTM32Timer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
+    sSTM32Timer.setPrescaleFactor(1);
+    sSTM32Timer.setOverflow(F_CPU  / SAMPLE_RATE);
+    sSTM32Timer.attachInterrupt(TIMER_CH1, timerInterrupt);
+    sSTM32Timer.resume();  // Start timer
+    sSTM32Timer.refresh(); // Reset to start values
 
+#elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
+    // STM32duino by ST Microsystems.
+    // https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
+    // stm32 architecture for "Generic STM32F1 series" from "STM32 Boards (selected from submenu)" of Arduino Board manager
+
+#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
+//    analogWriteFrequency(62500);
+    analogWriteFrequency(140625); // 9 bit at 72 MHz
+    /*
+     * Set timer for interrupts at SAMPLE_RATE
+     */
+    sSTM32Timer.setOverflow(1000000L / SAMPLE_RATE, MICROSEC_FORMAT);
+    sSTM32Timer.attachInterrupt(timerInterrupt);
+    sSTM32Timer.resume();  // Start timer
+    sSTM32Timer.refresh(); // Reset to start values
 #endif // AVR
+
+#ifdef MEASURE_TIMING
+    pinMode(TIMING_PIN, OUTPUT);
+#endif
 
     isTalkingFlag = true;
 }
@@ -344,20 +392,6 @@ void Talkie::terminateHardware() {
     TCCR2A = 0; // disconnect outputs
 #  endif
 
-#elif defined(ARDUINO_ARCH_SAMD) // Zero
-    tcEnd();
-
-#elif defined(ESP8266)
-    timer1_detachInterrupt(); // disables interrupt too
-
-#elif defined(ESP32)
-    timerAlarmDisable(sESP32Timer);
-
-#elif defined(TEENSYDUINO)
-    sIntervalTimer.end();
-#endif // defined(__AVR__)
-
-#if defined(__AVR__)
     /*
      * Call noTone() to force initializing of tone library for the next time tone() is called.
      * noTone() disconnect the pin from timer, and write a 0 to the pin.
@@ -380,7 +414,20 @@ void Talkie::terminateHardware() {
         noTone(InvertedOutputPin);
 #endif
     }
-#endif // (__AVR__)
+
+    #elif defined(ARDUINO_ARCH_SAMD) // Zero
+    tcEnd();
+
+#elif defined(ESP32)
+    timerAlarmDisable(sESP32Timer);
+
+#elif defined(TEENSYDUINO)
+    sIntervalTimer.end();
+
+#elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1) || defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
+    sSTM32Timer.pause();
+
+#endif // defined(__AVR__)
 
     isTalkingFlag = false;
 }
@@ -430,9 +477,6 @@ void Talkie::setPtr(const uint8_t *aAddress) {
  * Returns 0 if nothing to play, otherwise the number of the queued items plus the one which is active.
  */
 uint8_t Talkie::getNumberOfWords() {
-#if defined(ESP8266)
-    yield(); // required for ESP8266
-#endif
     if (!isTalkingFlag) {
         return 0;   // Nothing playing!
     } else {
@@ -441,9 +485,6 @@ uint8_t Talkie::getNumberOfWords() {
 }
 
 bool Talkie::isTalking() {
-#if defined(ESP8266)
-    yield(); // required for ESP8266
-#endif
     return isTalkingFlag;
 }
 
@@ -531,9 +572,6 @@ const uint8_t* Talkie::FIFOPopFront() {
  */
 void Talkie::wait() {
     while (isTalkingFlag) {
-#if defined(ESP8266)
-        yield(); // required for ESP8266
-#endif
     }
 }
 
@@ -664,10 +702,9 @@ extern "C" {
  * Called every 125 microsecond / 8000 Hz
  * 75 to 90 (when calling setNextSynthesizerData()) microseconds processing time @16 MHz
  * 50 microseconds with 4 simple optimizations (change ">>15" to "<<1) >>16")
+ * 12 us for a BluePill
  */
-#if defined(ESP8266)
-ICACHE_RAM_ATTR
-#elif defined(ESP32)
+#if defined(ESP32)
 IRAM_ATTR
 #endif
 void timerInterrupt() {
@@ -676,7 +713,7 @@ void timerInterrupt() {
     digitalWriteFast(TIMING_PIN, HIGH);
 #endif
 
-#if defined _8_BIT_OUTPUT
+#if defined(_8_BIT_OUTPUT)
     static uint8_t nextPwm;
 #else
     static uint16_t nextPwm;
@@ -801,12 +838,13 @@ void timerInterrupt() {
 
     x0 = u0;
 
-#if defined _8_BIT_OUTPUT
-    nextPwm = (u0 >> 2) + 0x80;
-#elif defined _10_BIT_OUTPUT
+#if defined(_10_BIT_OUTPUT)
     nextPwm = (u0) + 0x200;
-#elif defined _12_BIT_OUTPUT
+#elif defined(_12_BIT_OUTPUT)
     nextPwm = (u0 * 2) + 0x800;
+#else
+    // 8 bit is default
+    nextPwm = (u0 >> 2) + 0x80;
 #endif
 
     ISRCounterToNextData--;

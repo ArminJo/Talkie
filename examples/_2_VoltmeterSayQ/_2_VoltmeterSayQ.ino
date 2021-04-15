@@ -35,7 +35,9 @@
  * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
  * Esplora      6/PD7       %           1           4
  * Zero (SAMD)  A0          %           TC5         DAC0
- * ESP32        25          %           hw_timer_t  DAC0
+ * ESP32        25          %           timer1      analogWrite
+ * BluePill     3           %           timer3      analogWrite Roger Clarks core
+ * BluePill     PA3         %           timer4      analogWrite STM core
  * Teensy       12/14721    %         IntervalTimer analogWrite
  */
 
@@ -49,6 +51,16 @@
 #elif defined(ARDUINO_ARCH_SAMD)
 // On the Zero and others we switch explicitly to SerialUSB
 #define Serial SerialUSB
+#endif
+
+#if defined(ESP32)
+/*
+ * Send serial info over Bluetooth
+ * Use the Serial Bluetooth Terminal app and connect to ESP32_Talkie
+ */
+#include "BluetoothSerial.h"
+BluetoothSerial SerialBT;
+#define Serial SerialBT // redirect all Serial output to Bluetooth
 #endif
 
 /*
@@ -68,8 +80,12 @@ Talkie Voice;
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 
+#if defined(ESP32) && defined(Serial)
+    Serial.begin("ESP32_Talkie", false);
+#else
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217)
+#endif
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_USB) || defined(SERIAL_PORT_USBVIRTUAL)  || defined(ARDUINO_attiny3217) || (defined (USBCON) && defined(USBD_USE_CDC))
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
 #endif
     // Just to know which program is running on my Arduino
@@ -82,6 +98,7 @@ void setup() {
     analogReadResolution(12);
 #endif
     Serial.print(F("Voice queue size is: "));
+    Serial.flush();
     Serial.println(Voice.sayQ(spPAUSE1)); // this initializes the queue and the hardware
 #if defined(ARDUINO_ARCH_SAMD)
     Serial.println(F("Read voltage at pin A1"));
@@ -90,7 +107,11 @@ void setup() {
 #endif
 
     Serial.print(F("Speech output at pin "));
+#if defined(ARDUINO_ARCH_STM32)
+    Serial.println("PA3"); // the internal pin numbers are crazy for the STM32 Boards library
+#else
     Serial.print(Voice.NonInvertedOutputPin);
+#endif
 
     if (Voice.InvertedOutputPin && Voice.InvertedOutputPin != TALKIE_USE_PIN_FLAG) {
         Serial.print(F(" and inverted output at pin "));
@@ -98,7 +119,7 @@ void setup() {
     }
     Serial.println();
     Serial.println();
-
+    Serial.flush();
 }
 
 void loop() {
@@ -119,7 +140,7 @@ void loop() {
 
     Serial.print(tVoltage);
     Serial.println(" mV input");
-
+    Serial.flush();
 //    sayQVoltageMilliVolts(&Voice, tVoltage);
     float tVoltageFloat = tVoltage / 1000.0;
     sayQVoltageVolts(&Voice, tVoltageFloat);

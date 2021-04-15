@@ -17,6 +17,8 @@ YouTube Demonstration of Talkie voltmeter example
 
 [![Demonstration of Talkie voltmeter example](https://img.youtube.com/vi/6jXkugZTwCs/0.jpg)](https://www.youtube.com/watch?v=6jXkugZTwCs)
 
+YouTube Intoduction by [Gadget Reboot](https://www.youtube.com/channel/UCwiKHTegfDe33K5wnmyULog)
+
 [![Intoduction by Gadget Reboot](https://img.youtube.com/vi/O_yl5kcRO5w/0.jpg)](https://www.youtube.com/watch?v=O_yl5kcRO5w)
 
 ## Improvements to the original and to the non blocking version of PaulStoffregen
@@ -32,7 +34,7 @@ YouTube Demonstration of Talkie voltmeter example
   - **ATmega2560** as found on the **MEGA 2560** board.
   - **ATmega32U4** as found on the **Leonardo** and **CircuitPlaygound** boards.
   - **ARM0** (Tested for Arduino Zero) as found on the **SAMD**, **Teensy** and **Particle** boards.
-  - **ESP32**.
+  - **ESP32**. ESP8266 is theoretical possible using FRC2, but for now Arduino shares the FRC1 timer between interrupts and PWM.
   
 ## Pin mapping table for different platforms
 | Platform | Normal | Inverted | 8kHz timer | PWM timer |
@@ -48,7 +50,7 @@ YouTube Demonstration of Talkie voltmeter example
 
 ## Timer usage
 **Timer 1** (Servo timer) is used at all ATmegas for updating voice output data at 8 kHz.
-**Timer 2** (Tone timer) on ATmega328 and **Timer 4** on ATmega2560 + ATmega32U4 is used to generate the 8 bit PWM output.
+**Timer 2** (Tone timer) on ATmega328 (62500 Hz / 16 µs) and **Timer 4** on ATmega2560 + ATmega32U4 (5 µs) is used to generate the 8 bit PWM output.
 
 ## Hints
 - As **default** both inverted and not inverted outputs are enabled to **increase volume** if speaker is attached between them.
@@ -75,10 +77,10 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
 
 # OUTPUT FILTER
 ```
-    C to avoid clicks   Low pass    DC decoupling (optional)
+    C to avoid clicks  Low pass 1600Hz  DC decoupling (optional)
                       _____
-  D3 >------||-------| 10k |---+---------||-------> to Power amplifier
-           100nF      -----    |        10nF
+  D3 >------||-------| 10k |---+----------||-------> to Power amplifier
+           100nF      -----    |         10nF
                               ---
                               --- 10 nF
                                |
