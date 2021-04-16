@@ -114,33 +114,14 @@ void timerInterrupt(void);
 #endif
 
 #if defined(TEENSYDUINO)
-// common for all Teensy
 IntervalTimer sIntervalTimer;
-#  define _12_BIT_OUTPUT
-
-#  if defined(__MKL26Z64__) // Teensy LC
-#  define DAC_PIN A12
-
-#  elif defined(__MK20DX256__) // Teensy 3.1 / 3.2
-#  define DAC_PIN A14
-
-#  elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // Teensy 3.5 / 3.6
-#  define DAC_PIN A21 // Or A22
-#  endif // defined(__MKL26Z64__)
 
 #elif  defined(ESP32)
 #include <driver/dac.h>
 static hw_timer_t *sESP32Timer = NULL;
-#  define _8_BIT_OUTPUT
-#  define DAC_PIN 25 // Or 26
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
-#  define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
-#  define DAC_PIN DAC0   // PA02 + DAC1 on due
-// On the Zero and others we switch explicitly to SerialUSB
-//#define Serial SerialUSB
-// TC5
-static void tcStart(uint32_t sampleRate);
+static void tcStart(uint32_t sampleRate); // TC5
 static void tcEnd();
 
 #elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1)
@@ -150,8 +131,6 @@ static void tcEnd();
  * Timer 3 blocks PA6, PA7, PB0, PB1, so if you require one of them as tone() or Servo output, you must choose another timer.
  */
 HardwareTimer sSTM32Timer(3);
-
-#  define DAC_PIN PA3      // T2C4
 
 #elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
 #include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
@@ -165,7 +144,6 @@ HardwareTimer sSTM32Timer(TIM4);
 HardwareTimer sSTM32Timer(TIM2);
 #  endif
 
-#  define DAC_PIN PA3      // T2C4
 #endif
 
 static void setNextSynthesizerData();
@@ -183,21 +161,20 @@ static uint16_t ISRCounterToNextData = 0;
 void Talkie::initializeHardware() {
 // Enable the speech system whenever say() is called.
 #if defined(__AVR__)
-#define _8_BIT_OUTPUT // Use 8 bit PWM
 
 #if defined(__AVR_ATmega32U4__) // Use Timer 4 instead of Timer 2
 #  if defined(ARDUINO_AVR_CIRCUITPLAY) || defined(ARDUINO_AVR_PROMICRO)
 // Adafruit Circuit Playground Classic or Sparkfun Pro Micro board. The first does not need inverted output, the latter does not connect it.
 // Cannot be used on plain Leonardos because inverted output is connected to internal led.
     NonInvertedOutputPin = 5;// D5/PC6/!OC4A
-#  define PWM_VALUE_DESTINATION OCR4A
+#define PWM_VALUE_DESTINATION OCR4A
     InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4A = _BV(COM4A0) | _BV(PWM4A);// Clear on match, PWMA on, OC4A/PC7 & !OC4A/PC6 connected
 
 #  elif defined(ARDUINO_AVR_ESPLORA)
     NonInvertedOutputPin = 6; // Only D6/PD7/OC4D connected to Speaker
-#  define PWM_VALUE_DESTINATION OCR4D
+#define PWM_VALUE_DESTINATION OCR4D
     InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4C = _BV(COM4D1) |_BV(PWM4D);
@@ -205,7 +182,7 @@ void Talkie::initializeHardware() {
 #  else
 // Leonardo, Lilypad USB, FLORA, TEENSY
     NonInvertedOutputPin = 10;// D10/OC4B/PB6
-#  define PWM_VALUE_DESTINATION OCR4B
+#define PWM_VALUE_DESTINATION OCR4B
     pinMode(NonInvertedOutputPin, OUTPUT);
     if (InvertedOutputPin) {
         // use both output
@@ -244,8 +221,8 @@ void Talkie::initializeHardware() {
         pinMode(InvertedOutputPin, OUTPUT);
         TCCR4A |= _BV(COM4B1) | _BV(COM4B0);// OC4B inverting mode
     }
-#  define PWM_VALUE_DESTINATION OCR4A
-#  define PWM_INVERTED_VALUE_DESTINATION OCR4B
+#define PWM_VALUE_DESTINATION OCR4A
+#define PWM_INVERTED_VALUE_DESTINATION OCR4B
 
 #else // __AVR_ATmega32U4__
     /*
@@ -265,8 +242,8 @@ void Talkie::initializeHardware() {
         pinMode(InvertedOutputPin, OUTPUT);
         TCCR2A |= _BV(COM2A1) | _BV(COM2A0); // OC2A inverting mode
     }
-#  define PWM_VALUE_DESTINATION OCR2B
-#  define PWM_INVERTED_VALUE_DESTINATION OCR2A
+#define PWM_VALUE_DESTINATION OCR2B
+#define PWM_INVERTED_VALUE_DESTINATION OCR2A
 
     TCCR2B = _BV(CS20); // direct clock
     TIMSK2 = 0;
@@ -292,30 +269,45 @@ void Talkie::initializeHardware() {
     TIMSK1 = _BV(OCIE1B); // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
-#define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin
+#define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
+#define DAC_PIN DAC0   // PA02 + DAC1 on due
+#define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
 #  ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
     static const int CPLAY_SPEAKER_SHUTDOWN= 11;
     pinMode(CPLAY_SPEAKER_SHUTDOWN, OUTPUT);
     digitalWrite(CPLAY_SPEAKER_SHUTDOWN, HIGH);
 #  endif
     analogWriteResolution(10); // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
-    analogWrite(ANALOG_WRITE_DESTINATION, 1 << 9); // DAC0
+    analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, 1 << 9); // DAC0
     tcStart(SAMPLE_RATE);
 
 #elif defined(TEENSYDUINO)
     // common for all Teensy
+#define _12_BIT_OUTPUT
+
+#  if defined(__MKL26Z64__) // Teensy LC
+#define DAC_PIN A12
+
+#  elif defined(__MK20DX256__) // Teensy 3.1 / 3.2
+#define DAC_PIN A14
+
+#  elif defined(__MK64FX512__) || defined(__MK66FX1M0__) // Teensy 3.5 / 3.6
+#define DAC_PIN A21 // Or A22
+#  endif // defined(__MKL26Z64__)
+
     sIntervalTimer.begin(timerInterrupt, 1000000L / SAMPLE_RATE);
 
 #  if defined(DAC_PIN)
-#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
+#define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
     analogWriteResolution(12);
 #  else // Teensy 3.0, Teensy 4.0 / 4.1
-#    define ANALOG_WRITE_DESTINATION A6 // No DAC here
-    analogWriteFrequency(NonInvertedOutputPin,62500);
+#define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(A6, nextPwm)
+    analogWriteFrequency(NonInvertedOutputPin, 62500);
 #  endif // (DAC_PIN)
 
 #elif defined(ESP32)
-#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
+#define DAC_PIN 25 // Or 26
+#define PWM_OUTPUT_FUNCTION(nextPwm) dacWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
     // Use Timer1 with 1 microsecond resolution, main APB clock is 80MHZ
 #define APB_FREQUENCY_DIVIDER 80
     sESP32Timer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
@@ -338,7 +330,9 @@ void Talkie::initializeHardware() {
 #elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1) // Recommended original Arduino_STM32 by Roger Clark.
     // STM32F1 architecture for "Generic STM32F103C series" from "STM32F1 Boards (Arduino_STM32)" of Arduino Board manager
     // http://dan.drown.org/stm32duino/package_STM32duino_index.json
-#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
+#define DAC_PIN PA3      // T2C4
+#define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
+
     /*
      * Set timer for interrupts at SAMPLE_RATE
      */
@@ -353,10 +347,12 @@ void Talkie::initializeHardware() {
     // STM32duino by ST Microsystems.
     // https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
     // stm32 architecture for "Generic STM32F1 series" from "STM32 Boards (selected from submenu)" of Arduino Board manager
-
-#  define ANALOG_WRITE_DESTINATION sPointerToTalkieForISR->NonInvertedOutputPin // initialized with DAC pin, but can be changed
-//    analogWriteFrequency(62500);
-    analogWriteFrequency(140625); // 9 bit at 72 MHz
+#define DAC_PIN PA3      // T2C4
+#define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
+#define _10_BIT_OUTPUT
+    analogWriteResolution(10);
+    analogWriteFrequency(F_CPU / (1 << 10)); // 70312 10 bit at 72 MHz (70312.5)
+//    analogWriteFrequency(F_CPU / (1 << 8)); // 281250 8 bit at 72 MHz
     /*
      * Set timer for interrupts at SAMPLE_RATE
      */
@@ -373,8 +369,8 @@ void Talkie::initializeHardware() {
     isTalkingFlag = true;
 }
 
-#if ! defined(PWM_VALUE_DESTINATION) && ! defined(ANALOG_WRITE_DESTINATION)
-#error One of PWM_VALUE_DESTINATION or ANALOG_WRITE_DESTINATION must be defined in initializeHardware()
+#if ! defined(PWM_VALUE_DESTINATION) && ! defined(PWM_OUTPUT_FUNCTION)
+#error One of PWM_VALUE_DESTINATION or PWM_OUTPUT_FUNCTION must be defined in initializeHardware()
 #endif
 
 void Talkie::terminateHardware() {
@@ -713,12 +709,12 @@ void timerInterrupt() {
     digitalWriteFast(TIMING_PIN, HIGH);
 #endif
 
-#if defined(_8_BIT_OUTPUT)
+    static uint8_t periodCounter;
+#if !defined(_10_BIT_OUTPUT) && !defined(_12_BIT_OUTPUT)
     static uint8_t nextPwm;
 #else
     static uint16_t nextPwm;
 #endif
-    static uint8_t periodCounter;
 #if defined(USE_10_BIT_KOEFFICIENT_VALUES)
     static int32_t x0, x1, x2, x3, x4, x5, x6, x7, x8, x9;
     int32_t u0, u1, u2, u3, u4, u5, u6, u7, u8, u9, u10;
@@ -736,14 +732,8 @@ void timerInterrupt() {
 #if defined(PWM_INVERTED_VALUE_DESTINATION)
     PWM_INVERTED_VALUE_DESTINATION = nextPwm;
 #endif
-#if defined(ANALOG_WRITE_DESTINATION)
-#  if  defined(ESP32)
-//    Serial.print(nextPwm);
-//    Serial.print(' ');
-    dacWrite(ANALOG_WRITE_DESTINATION, nextPwm);
-#  else
-    analogWrite(ANALOG_WRITE_DESTINATION, nextPwm);
-#  endif
+#if defined(PWM_OUTPUT_FUNCTION)
+    PWM_OUTPUT_FUNCTION(nextPwm);
 #endif
 
     if (synthPeriod) {
@@ -958,9 +948,9 @@ static void tcEnd() {
     TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
     tcReset();
 #if defined _10_BIT_OUTPUT
-    analogWrite(DAC_PIN, 0x200);
+    PWM_OUTPUT_FUNCTION(0x200);
 #elif defined(_12_BIT_OUTPUT)
-    analogWrite(DAC_PIN, 0x800);
+    PWM_OUTPUT_FUNCTION(0x800);
 #endif
 }
 

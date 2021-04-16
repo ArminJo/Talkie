@@ -78,7 +78,7 @@ BluetoothSerial SerialBT;
 Talkie Voice;
 //Talkie Voice(true, false);
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
+//    pinMode(LED_BUILTIN, OUTPUT);
 
 #if defined(ESP32) && defined(Serial)
     Serial.begin("ESP32_Talkie", false);
@@ -117,7 +117,6 @@ void setup() {
         Serial.print(F(" and inverted output at pin "));
         Serial.print(Voice.InvertedOutputPin);
     }
-    Serial.println();
     Serial.println();
     Serial.flush();
 }
