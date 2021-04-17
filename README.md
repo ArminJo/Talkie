@@ -1,7 +1,7 @@
 # [Talkie](https://github.com/ArminJo/Talkie)
 Available as Arduino library "Talkie"
 
-### [Version 1.2.1](https://github.com/ArminJo/Talkie/releases)
+### [Version 1.3.0](https://github.com/ArminJo/Talkie/releases) - work in progress
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
@@ -107,10 +107,11 @@ If you are using Sloeber as your IDE, you can easily define global symbols with 
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
 # Revision History
-### Version 1.2.1
+### Version 1.3.0
 - Removed blocking wait for ATmega32U4 Serial in examples.
 - 10 bit Coefficients are working noe, but they do not sound better :-(.
 - Tested on an ESP32.
+- Tested on a BluePill.
 
 ### Version 1.2.0
 - Corrected wrong function name doNotUseUseInvertedOutput().

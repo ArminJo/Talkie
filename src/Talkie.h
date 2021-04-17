@@ -32,9 +32,9 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.2.2"
+#define VERSION_TALKIE "1.3.0"
 #define VERSION_TALKIE_MAJOR 1
-#define VERSION_TALKIE_MINOR 2
+#define VERSION_TALKIE_MINOR 3
 // The change log is at the bottom of the file
 
 // If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size :-)
