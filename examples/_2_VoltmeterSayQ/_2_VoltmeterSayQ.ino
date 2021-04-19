@@ -131,6 +131,8 @@ void loop() {
     int tVoltage = analogRead(A0) * tVCCVoltage / 1.023;
 #elif defined(ESP32)
     int tVoltage = analogRead(A0) * 3.3 / 4.096;
+#elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1)
+    int tVoltage = analogRead(0) * 3.3 / 4.096;
 #elif defined(ARDUINO_ARCH_SAMD)
     int tVoltage = analogRead(A1) * 3.3 / 4.096; // A0 is DAC output
 #else

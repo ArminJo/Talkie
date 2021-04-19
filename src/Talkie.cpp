@@ -73,8 +73,8 @@
 
 #include "Talkie.h"
 
-// Enable this if you want to measure timing by toggling pin 8 on an arduino
-#define MEASURE_TIMING
+// Enable this if you want to measure timing by toggling pin 8 on an Arduino
+//#define MEASURE_TIMING
 #ifdef MEASURE_TIMING
 #include "digitalWriteFast.h"
 #  if defined(ARDUINO_ARCH_STM32)
@@ -131,6 +131,7 @@ static void tcEnd();
  * Timer 3 blocks PA6, PA7, PB0, PB1, so if you require one of them as tone() or Servo output, you must choose another timer.
  */
 HardwareTimer sSTM32Timer(3);
+HardwareTimer sSTM32PWMTimer(2);
 
 #elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
 #include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
@@ -331,14 +332,25 @@ void Talkie::initializeHardware() {
     // STM32F1 architecture for "Generic STM32F103C series" from "STM32F1 Boards (Arduino_STM32)" of Arduino Board manager
     // http://dan.drown.org/stm32duino/package_STM32duino_index.json
 #define DAC_PIN PA3      // T2C4
-#define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
+#define _10_BIT_OUTPUT
+#define PWM_OUTPUT_FUNCTION(nextPwm) sSTM32PWMTimer.setCompare(TIMER_CH4, nextPwm)
+
+    /*
+     * Prepare 10 bit PWM @ 72 MHz
+     */
+    pinMode(DAC_PIN, PWM); // this initializes the output pin and the timer mode
+    sSTM32PWMTimer.setPrescaleFactor(1);
+    sSTM32PWMTimer.setOverflow((1 << 10) - 1);
+    sSTM32PWMTimer.setCompare(TIMER_CH4, (1 << 9));
+    sSTM32PWMTimer.resume();  // Start timer
+    sSTM32PWMTimer.refresh(); // Reset to start values
 
     /*
      * Set timer for interrupts at SAMPLE_RATE
      */
     sSTM32Timer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
     sSTM32Timer.setPrescaleFactor(1);
-    sSTM32Timer.setOverflow(F_CPU  / SAMPLE_RATE);
+    sSTM32Timer.setOverflow(F_CPU / SAMPLE_RATE);
     sSTM32Timer.attachInterrupt(TIMER_CH1, timerInterrupt);
     sSTM32Timer.resume();  // Start timer
     sSTM32Timer.refresh(); // Reset to start values
@@ -698,7 +710,8 @@ extern "C" {
  * Called every 125 microsecond / 8000 Hz
  * 75 to 90 (when calling setNextSynthesizerData()) microseconds processing time @16 MHz
  * 50 microseconds with 4 simple optimizations (change ">>15" to "<<1) >>16")
- * 12 us for a BluePill
+ * 8 us for a BluePill with Roger Clarks core
+ * 12 us for a BluePill with official STM core
  */
 #if defined(ESP32)
 IRAM_ATTR

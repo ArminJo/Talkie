@@ -106,6 +106,14 @@ In both cases the library files itself are located in the `src` directory.<br/>
 If you are using Sloeber as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
 ![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
 
+# BluePill cores
+There are two cores for the PluePill.
+- The original Arduino_STM32 by Roger Clark; http://dan.drown.org/stm32duino/package_STM32duino_index.json
+- The CMSIS based STM32duino by ST Microsystems; https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
+Generation of the high speed PWM is **complicated** for Roger Clark core and **easy** for the STM core.
+Program size for _2_VoltmeterSayQ.cpp is **21 kByte** for Roger Clark core and **32 kByte** for STM core.
+The 8 kHz interrupt handling requires **8 µs** for Roger Clark core and **12 µs** for STM core.
+
 # Revision History
 ### Version 1.3.0
 - Removed blocking wait for ATmega32U4 Serial in examples.
