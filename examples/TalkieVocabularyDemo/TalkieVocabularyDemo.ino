@@ -32,7 +32,8 @@
 #include "Talkie.h"
 #include "Vocab_US_Large.h"
 #include "Vocab_Special.h"
-#include "Vocab_Soundbites.h"
+#include "Vocab_US_TI99.h"
+#include "Vocab_US_Clock.h"
 
 /*
  * Voice PWM output pins for different ATmegas:
@@ -83,10 +84,27 @@ void loop() {
     voice.say(sp2_ON);
     voice.say(sp2_FIRE);
 
-    // The strange soundbites demo
+    // US Clock words
     voice.say(spPAUSE2);
-    voice.say(spWHAT_IS_THY_BIDDING);
-    voice.say(spHASTA_LA_VISTA);
-    voice.say(spONE_SMALL_STEP);
-    voice.say(spHMMM_BEER);
+    voice.say(spc_GOOD);
+    voice.say(spc_EVENING);
+    voice.say(spPAUSE1);
+    voice.say(spc_THE);
+    voice.say(spc_TIME);
+    voice.say(spc_IS);
+    voice.say(spc_SEVEN);
+    voice.say(spc_FOURTY);
+    voice.say(spc_FIVE);
+    voice.say(spc_P_M_);
+    voice.say(spPAUSE1);
+
+    // Ti99 words
+    voice.say(spPAUSE2);
+    voice.say(spt_CASSETTE);
+    voice.say(spt_COMPLETED);
+    voice.say(spPAUSE1);
+    voice.say(spt_BUT);
+    voice.say(spt_NOT);
+    voice.say(spt_FINISHED);
+
 }

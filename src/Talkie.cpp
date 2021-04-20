@@ -46,10 +46,16 @@
  * Esplora      6/PD7       %           1           4
  * Zero (SAMD)  A0          %           TC5         DAC0
  * ESP32        25          %           hw_timer_t  DAC0
+ * BluePill     3           %           timer3      analogWrite Roger Clarks core
+ * BluePill     PA3         %           timer4      analogWrite STM core
  * Teensy       12/14721    %         IntervalTimer analogWrite
  *
+ *  As default both inverted and not inverted outputs are enabled for AVR to increase volume if speaker is attached between them.
+ *  Use Talkie Voice(true, false); if you only need not inverted pin or if you want to use SPI on ATmega328 which needs pin 11.
  *
- *  Copyright (C) 2018  Armin Joachimsmeyer
+ *  The outputs can drive headphones directly, or add a simple audio amplifier to drive a loudspeaker.
+ *
+ *  Copyright (C) 2018-2021  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Talkie https://github.com/ArminJo/Talkie.
@@ -118,7 +124,7 @@ IntervalTimer sIntervalTimer;
 
 #elif  defined(ESP32)
 #include <driver/dac.h>
-static hw_timer_t *sESP32Timer = NULL;
+static hw_timer_t *sTalkieSampleRateTimer = NULL;
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 static void tcStart(uint32_t sampleRate); // TC5
@@ -130,8 +136,9 @@ static void tcEnd();
  * Use timer 3 as sample rate timer.
  * Timer 3 blocks PA6, PA7, PB0, PB1, so if you require one of them as tone() or Servo output, you must choose another timer.
  */
-HardwareTimer sSTM32Timer(3);
-HardwareTimer sSTM32PWMTimer(2);
+HardwareTimer sTalkieSampleRateTimer(3);
+timer_dev *sTalkiePWMTimer;
+uint8_t sTalkiePWMTimerChannel;
 
 #elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
 #include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
@@ -140,9 +147,9 @@ HardwareTimer sSTM32PWMTimer(2);
  * Timer 4 blocks PB6, PB7, PB8, PB9, so if you require one of them as tone() or Servo output, you must choose another timer.
  */
 #  if defined(TIM4)
-HardwareTimer sSTM32Timer(TIM4);
+HardwareTimer sTalkieSampleRateTimer(TIM4);
 #  else
-HardwareTimer sSTM32Timer(TIM2);
+HardwareTimer sTalkieSampleRateTimer(TIM2);
 #  endif
 
 #endif
@@ -271,7 +278,7 @@ void Talkie::initializeHardware() {
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 #define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
-#define DAC_PIN DAC0   // PA02 + DAC1 on due
+#define DAC_PIN DAC0   // pin 14/A0 for Zero. PA02 + DAC1 on due
 #define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
 #  ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
     static const int CPLAY_SPEAKER_SHUTDOWN= 11;
@@ -311,10 +318,10 @@ void Talkie::initializeHardware() {
 #define PWM_OUTPUT_FUNCTION(nextPwm) dacWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
     // Use Timer1 with 1 microsecond resolution, main APB clock is 80MHZ
 #define APB_FREQUENCY_DIVIDER 80
-    sESP32Timer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
-    timerAttachInterrupt(sESP32Timer, timerInterrupt, true);
-    timerAlarmWrite(sESP32Timer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
-    timerAlarmEnable(sESP32Timer);
+    sTalkieSampleRateTimer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
+    timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt, true);
+    timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
+    timerAlarmEnable(sTalkieSampleRateTimer);
 #if defined(DEBUG) && defined(ESP32)
     Serial.print("CPU frequency=");
     Serial.print(getCpuFrequencyMHz());
@@ -333,27 +340,29 @@ void Talkie::initializeHardware() {
     // http://dan.drown.org/stm32duino/package_STM32duino_index.json
 #define DAC_PIN PA3      // T2C4
 #define _10_BIT_OUTPUT
-#define PWM_OUTPUT_FUNCTION(nextPwm) sSTM32PWMTimer.setCompare(TIMER_CH4, nextPwm)
+#define PWM_OUTPUT_FUNCTION(nextPwm) timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannel, nextPwm)
 
     /*
      * Prepare 10 bit PWM @ 72 MHz
      */
-    pinMode(DAC_PIN, PWM); // this initializes the output pin and the timer mode
-    sSTM32PWMTimer.setPrescaleFactor(1);
-    sSTM32PWMTimer.setOverflow((1 << 10) - 1);
-    sSTM32PWMTimer.setCompare(TIMER_CH4, (1 << 9));
-    sSTM32PWMTimer.resume();  // Start timer
-    sSTM32PWMTimer.refresh(); // Reset to start values
+    sTalkiePWMTimerChannel = PIN_MAP[sPointerToTalkieForISR->NonInvertedOutputPin].timer_channel; // set timer channel according to pin
+    sTalkiePWMTimer = PIN_MAP[sPointerToTalkieForISR->NonInvertedOutputPin].timer_device; // set timer according to pin
+    pinMode(sPointerToTalkieForISR->NonInvertedOutputPin, PWM); // this initializes the output pin and the timer mode
+    timer_set_prescaler(sTalkiePWMTimer, 0); // set prescaler to 1
+    timer_set_reload(sTalkiePWMTimer, (1 << 10) - 1); // setOverflow()
+    timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannel, (1 << 9));
+    timer_resume(sTalkiePWMTimer);  // Start timer
+    timer_generate_update(sTalkiePWMTimer); // Reset to start values
 
     /*
      * Set timer for interrupts at SAMPLE_RATE
      */
-    sSTM32Timer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
-    sSTM32Timer.setPrescaleFactor(1);
-    sSTM32Timer.setOverflow(F_CPU / SAMPLE_RATE);
-    sSTM32Timer.attachInterrupt(TIMER_CH1, timerInterrupt);
-    sSTM32Timer.resume();  // Start timer
-    sSTM32Timer.refresh(); // Reset to start values
+    sTalkieSampleRateTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
+    sTalkieSampleRateTimer.setPrescaleFactor(1);
+    sTalkieSampleRateTimer.setOverflow(F_CPU / SAMPLE_RATE);
+    sTalkieSampleRateTimer.attachInterrupt(TIMER_CH1, timerInterrupt);
+    sTalkieSampleRateTimer.resume();  // Start timer
+    sTalkieSampleRateTimer.refresh(); // Reset to start values
 
 #elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
     // STM32duino by ST Microsystems.
@@ -368,10 +377,10 @@ void Talkie::initializeHardware() {
     /*
      * Set timer for interrupts at SAMPLE_RATE
      */
-    sSTM32Timer.setOverflow(1000000L / SAMPLE_RATE, MICROSEC_FORMAT);
-    sSTM32Timer.attachInterrupt(timerInterrupt);
-    sSTM32Timer.resume();  // Start timer
-    sSTM32Timer.refresh(); // Reset to start values
+    sTalkieSampleRateTimer.setOverflow(1000000L / SAMPLE_RATE, MICROSEC_FORMAT);
+    sTalkieSampleRateTimer.attachInterrupt(timerInterrupt);
+    sTalkieSampleRateTimer.resume();  // Start timer
+    sTalkieSampleRateTimer.refresh(); // Reset to start values
 #endif // AVR
 
 #ifdef MEASURE_TIMING
@@ -427,13 +436,13 @@ void Talkie::terminateHardware() {
     tcEnd();
 
 #elif defined(ESP32)
-    timerAlarmDisable(sESP32Timer);
+    timerAlarmDisable(sTalkieSampleRateTimer);
 
 #elif defined(TEENSYDUINO)
     sIntervalTimer.end();
 
 #elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1) || defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
-    sSTM32Timer.pause();
+    sTalkieSampleRateTimer.pause();
 
 #endif // defined(__AVR__)
 
@@ -712,6 +721,7 @@ extern "C" {
  * 50 microseconds with 4 simple optimizations (change ">>15" to "<<1) >>16")
  * 8 us for a BluePill with Roger Clarks core
  * 12 us for a BluePill with official STM core
+ * 15 us for Arduino Zero @ 48 MHz
  */
 #if defined(ESP32)
 IRAM_ATTR
@@ -770,7 +780,7 @@ void timerInterrupt() {
     }
 
 // Lattice filter forward path -> fill temporary variables
-// rescale by shifting >> 7 because we have signed values here (for unsigned it would need >> 8)
+// rescale by shifting >> 7 because we have signed values here (for unsigned it would require >> 8)
 #if !defined(USE_10_BIT_KOEFFICIENT_VALUES)
     u9 = u10 - (((int16_t) synthK10 * x9) >> 7);
     u8 = u9 - (((int16_t) synthK9 * x8) >> 7);
@@ -802,15 +812,6 @@ void timerInterrupt() {
     u0 = u1 - ((synthK1 * x0) >> 9);
 #endif
 
-// Output clamp
-// Yes this happens generally seldom, but for "spt_BUT" it happens very often, which makes this sound unusable
-    if (u0 > 511) {
-        u0 = 511;
-    }
-    if (u0 < -512) {
-        u0 = -512;
-    }
-
 // Lattice filter reverse path -> compute next x* values
 #if !defined(USE_10_BIT_KOEFFICIENT_VALUES)
     x9 = x8 + (((int16_t) synthK9 * u8) >> 7);
@@ -839,12 +840,12 @@ void timerInterrupt() {
     x1 = x0 + ((synthK1 * u0) >> 9);
 #endif
 
-    x0 = u0;
+    x0 = u0; // 10 bit value -512 to +511
 
 #if defined(_10_BIT_OUTPUT)
     nextPwm = (u0) + 0x200;
 #elif defined(_12_BIT_OUTPUT)
-    nextPwm = (u0 * 2) + 0x800;
+    nextPwm = (u0 * 4) + 0x800;
 #else
     // 8 bit is default
     nextPwm = (u0 >> 2) + 0x80;

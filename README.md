@@ -1,7 +1,7 @@
 # [Talkie](https://github.com/ArminJo/Talkie)
 Available as Arduino library "Talkie"
 
-### [Version 1.3.0](https://github.com/ArminJo/Talkie/releases) - work in progress
+### [Version 1.3.0](https://github.com/ArminJo/Talkie/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
@@ -33,12 +33,13 @@ YouTube Intoduction by [Gadget Reboot](https://www.youtube.com/channel/UCwiKHTeg
   - **ATmega328** as found on the **Uno** and **Nano** boards.
   - **ATmega2560** as found on the **MEGA 2560** board.
   - **ATmega32U4** as found on the **Leonardo** and **CircuitPlaygound** boards.
-  - **ARM0** (Tested for Arduino Zero) as found on the **SAMD**, **Teensy** and **Particle** boards.
+  - **ARM M0** (Tested for Arduino Zero) as found on the **SAMD**, **Teensy** and **Particle** boards.
   - **ESP32**. ESP8266 is theoretical possible using FRC2, but for now Arduino shares the FRC1 timer between interrupts and PWM.
+  - **ARM M3** (Tested for BluePill) for Roger Clarks as well as STM core.
   
 ## Pin mapping table for different platforms
-| Platform | Normal | Inverted | 8kHz timer | PWM timer |
-|-|-|-|-|-|
+| Platform | Normal | Inverted | 8kHz timer | PWM timer | Remarks |
+|-|-|-|-|-|-|
 | AVR (Uno and Nano) | 3 | 11     | 1     |    2 |
 | ATmega2560  | 6/PH3    | 7/PH4  | 1     |    4 |
 | Leonardo    | 9/PB5    | 10/PB6 | 1     |    4 |
@@ -46,6 +47,8 @@ YouTube Intoduction by [Gadget Reboot](https://www.youtube.com/channel/UCwiKHTeg
 | Esplora     | 6/PD7    | %      | 1     |    4 |
 | Zero (SAMD) | A0       | %      | TC5   | DAC0 |
 | ESP32       | 25       | %      | hw_timer_t    | DAC0 |
+| BluePill    | 3        | %      | timer3        | analogWrite | Roger Clarks core |
+| BluePill    | PA3      | %      | timer4        | analogWrite | STM core |
 | Teensy      | 12/14721 | %      | IntervalTimer | analogWrite |
 
 ## Timer usage
@@ -117,7 +120,7 @@ The 8 kHz interrupt handling requires **8 µs** for Roger Clark core and **12 µs*
 # Revision History
 ### Version 1.3.0
 - Removed blocking wait for ATmega32U4 Serial in examples.
-- 10 bit Coefficients are working noe, but they do not sound better :-(.
+- 10 bit Coefficients are working now, but they do not sound better :-(.
 - Tested on an ESP32.
 - Tested on a BluePill.
 

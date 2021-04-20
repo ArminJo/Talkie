@@ -35,10 +35,15 @@
  * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
  * Esplora      6/PD7       %           1           4
  * Zero (SAMD)  A0          %           TC5         DAC0
- * ESP32        25          %           timer1      analogWrite
+ * ESP32        25          %           hw_timer_t  DAC0
  * BluePill     3           %           timer3      analogWrite Roger Clarks core
  * BluePill     PA3         %           timer4      analogWrite STM core
  * Teensy       12/14721    %         IntervalTimer analogWrite
+ *
+ *  As default both inverted and not inverted outputs are enabled for AVR to increase volume if speaker is attached between them.
+ *  Use Talkie Voice(true, false); if you only need not inverted pin or if you want to use SPI on ATmega328 which needs pin 11.
+ *
+ *  The outputs can drive headphones directly, or add a simple audio amplifier to drive a loudspeaker.
  */
 
 #include <Talkie.h>
@@ -109,6 +114,8 @@ void setup() {
     Serial.print(F("Speech output at pin "));
 #if defined(ARDUINO_ARCH_STM32)
     Serial.println("PA3"); // the internal pin numbers are crazy for the STM32 Boards library
+#elif defined(ARDUINO_ARCH_SAMD)
+    Serial.println("A0"); // DAC0 is at PIN 14/A0
 #else
     Serial.print(Voice.NonInvertedOutputPin);
 #endif
