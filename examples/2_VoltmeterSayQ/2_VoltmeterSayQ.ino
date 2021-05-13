@@ -1,5 +1,5 @@
 /*
- *  _2_VoltmeterSayQ.cpp
+ *  2_VoltmeterSayQ.cpp
  *
  *  Tells the voltage measured by the ADC in millivolt.
  *
