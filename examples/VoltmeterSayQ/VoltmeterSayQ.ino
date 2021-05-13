@@ -1,5 +1,5 @@
 /*
- *  _2_VoltmeterSayQ.cpp
+ *  VoltmeterSayQ.cpp
  *
  *  Tells the voltage measured by the ADC in millivolt.
  *
@@ -157,5 +157,5 @@ void loop() {
     while (Voice.isTalking()) {
         ;
     }
-    delay(100);
+    delay(200);
 }

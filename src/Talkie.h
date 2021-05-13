@@ -32,7 +32,7 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.3.0"
+#define VERSION_TALKIE "1.3.1"
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 3
 // The change log is at the bottom of the file

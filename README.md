@@ -1,7 +1,7 @@
 # [Talkie](https://github.com/ArminJo/Talkie)
 Available as Arduino library "Talkie"
 
-### [Version 1.3.0](https://github.com/ArminJo/Talkie/releases)
+### [Version 1.3.1](https://github.com/ArminJo/Talkie/releases)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
@@ -114,10 +114,13 @@ There are two cores for the PluePill.
 - The original Arduino_STM32 by Roger Clark; http://dan.drown.org/stm32duino/package_STM32duino_index.json
 - The CMSIS based STM32duino by ST Microsystems; https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
 Generation of the high speed PWM is **complicated** for Roger Clark core and **easy** for the STM core.
-Program size for _2_VoltmeterSayQ.cpp is **21 kByte** for Roger Clark core and **32 kByte** for STM core.
+Program size for VoltmeterSayQ.cpp is **21 kByte** for Roger Clark core and **32 kByte** for STM core.
 The 8 kHz interrupt handling requires **8 µs** for Roger Clark core and **12 µs** for STM core.
 
 # Revision History
+### Version 1.3.1
+- Updated _1_Voltmeter example and renamed example names.
+
 ### Version 1.3.0
 - Removed blocking wait for ATmega32U4 Serial in examples.
 - 10 bit Coefficients are working now, but they do not sound better :-(.
