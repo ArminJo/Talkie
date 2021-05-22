@@ -27,8 +27,8 @@
  *
  *     C to avoid clicks  Low pass 1600 Hz  DC decoupling (optional)
  *                      _____
- *  D3 >------||-------| 10k |---+-----------||-------> to Power amplifier
- *           100nF      -----    |          10nF
+ *  D3 >------||-------|_____|---+-----------||-------> to Power amplifier
+ *           100nF       10k     |          10nF
  *                              ---
  *                              --- 10 nF
  *                               |
@@ -44,7 +44,7 @@
  * Leonardo     9/PB5       10/PB6      1           4
  * ProMicro     5/PC6       %           1           4 - or Adafruit Circuit Playground Classic
  * Esplora      6/PD7       %           1           4
- * Zero (SAMD)  A0          %           TC5         DAC0
+ * Zero (SAMD)  A0          %           TC5         A0/DAC0
  * ESP32        25          %           hw_timer_t  DAC0
  * BluePill     3           %           timer3      analogWrite Roger Clarks core
  * BluePill     PA3         %           timer4      analogWrite STM core
@@ -278,7 +278,11 @@ void Talkie::initializeHardware() {
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 #define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
-#define DAC_PIN DAC0   // pin 14/A0 for Zero. PA02 + DAC1 on due
+#if defined DAC0
+#define DAC_PIN DAC0   // pin 14/A0 for Zero. PA02 + DAC1 on DUE
+#else
+#define DAC_PIN A0   // On some SAMD boards DAC0 definition is missing
+#endif
 #define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
 #  ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
     static const int CPLAY_SPEAKER_SHUTDOWN= 11;

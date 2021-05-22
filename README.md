@@ -120,6 +120,7 @@ The 8 kHz interrupt handling requires **8 µs** for Roger Clark core and **12 µs*
 # Revision History
 ### Version 1.3.1
 - Updated _1_Voltmeter example and renamed example names.
+- Improved SAMD support.
 
 ### Version 1.3.0
 - Removed blocking wait for ATmega32U4 Serial in examples.

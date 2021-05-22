@@ -108,8 +108,13 @@ private:
 };
 
 /*
- * Version 1.2.1
- * - Removed blocking wait for ATmega32U4 Serial in examples.
+ * Version 1.3.1
+ * - Improved SAMD support.
+ *
+ * Version 1.3.0
+ * - 10 bit Coefficients are working now, but they do not sound better :-(.
+ * - Tested on an ESP32.
+ * - Tested on a BluePill.
  *
  * Version 1.2.0 - 8/2020
  * - Corrected wrong function name doNotUseUseInvertedOutput().
