@@ -92,7 +92,7 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
  ```
 
 # Compile options / macros for this library
-To customize the software to different car extensions, there are some compile options / macros available.<br/>
+To customize the software to different requirements, there are some compile options / macros available.<br/>
 Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for global compile (the latter is not possible with the Arduino IDE, so consider using [Sloeber](https://eclipse.baeyens.it).<br/>
 | Option | Default | File | Description |
 |-|-|-|-|
