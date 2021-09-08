@@ -64,6 +64,9 @@ YouTube Intoduction by [Gadget Reboot](https://www.youtube.com/channel/UCwiKHTeg
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
 - I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a series capacitor of 1 to 10 uF do block the DC current. Look for the right polarity. The AC current is proportional to the rectance of the speaker, not its resistance in Ohm, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud -what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker or a power amplifier.
 
+## Predefined vocabulary
+The predefined vocabulary can be found in the [Vocab\_\*.h files](https://github.com/ArminJo/Talkie/blob/master/src), especially in [Vocab_US_Large.h](https://github.com/ArminJo/Talkie/blob/master/src/Vocab_US_Large.h).
+
 ## Own vocabulary
 To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) like described [here](https://youtu.be/KQseCA0nftI) or the [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
 
