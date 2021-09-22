@@ -53,7 +53,7 @@ YouTube Intoduction by [Gadget Reboot](https://www.youtube.com/channel/UCwiKHTeg
 
 ## Timer usage
 **Timer 1** (Servo timer) is used at all ATmegas for updating voice output data at 8 kHz.
-**Timer 2** (Tone timer) on ATmega328 (62500 Hz / 16 µs) and **Timer 4** on ATmega2560 + ATmega32U4 (5 µs) is used to generate the 8 bit PWM output.
+**Timer 2** (Tone timer) on ATmega328 (62500 Hz / 16 ï¿½s) and **Timer 4** on ATmega2560 + ATmega32U4 (5 ï¿½s) is used to generate the 8 bit PWM output.
 
 ## Hints
 - As **default** both inverted and not inverted outputs are enabled to **increase volume** if speaker is attached between them.
@@ -86,7 +86,7 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
     C to avoid clicks  Low pass 1600Hz  DC decoupling (optional)
                       _____
   D3 >------||-------| 10k |---+----------||-------> to Power amplifier
-           100nF      -----    |         10nF
+           100nF      -----    |         10uF
                               ---
                               --- 10 nF
                                |
@@ -118,7 +118,7 @@ There are two cores for the PluePill.
 - The CMSIS based STM32duino by ST Microsystems; https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
 Generation of the high speed PWM is **complicated** for Roger Clark core and **easy** for the STM core.
 Program size for VoltmeterSayQ.cpp is **21 kByte** for Roger Clark core and **32 kByte** for STM core.
-The 8 kHz interrupt handling requires **8 µs** for Roger Clark core and **12 µs** for STM core.
+The 8 kHz interrupt handling requires **8 ï¿½s** for Roger Clark core and **12 ï¿½s** for STM core.
 
 # Revision History
 ### Version 1.3.1
