@@ -19,6 +19,21 @@
 // ROM VM61005
 // In this file the original order of ROMs is kept.
 // The .c file contains the sorted vocabulary.
+extern const uint8_t sp6_HIND[] PROGMEM;
+extern const uint8_t sp6_JAI[] PROGMEM;
+extern const uint8_t sp6_VIJAY[] PROGMEM;
+extern const uint8_t sp6_FOUNDATION[] PROGMEM;
+extern const uint8_t sp6_AGASTYA[] PROGMEM;
+extern const uint8_t sp6_CENTER[] PROGMEM;
+extern const uint8_t sp6_SCIENCE[] PROGMEM;
+extern const uint8_t sp6_DELHI[] PROGMEM;
+extern const uint8_t sp6_AMALWAS[] PROGMEM;
+extern const uint8_t sp6_HUB[] PROGMEM;
+extern const uint8_t sp6_INNOVATION[] PROGMEM;
+extern const uint8_t sp6_MINI[] PROGMEM;
+extern const uint8_t sp6_TO[] PROGMEM;
+extern const uint8_t sp6_WELCOME[] PROGMEM;
+
 extern const uint8_t sp5_ATU[] PROGMEM;
 extern const uint8_t sp5_FSS[] PROGMEM;
 extern const uint8_t sp5_ILS[] PROGMEM;
