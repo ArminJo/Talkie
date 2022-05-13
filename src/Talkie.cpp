@@ -232,6 +232,24 @@ void Talkie::initializeHardware() {
 #define PWM_VALUE_DESTINATION OCR4A
 #define PWM_INVERTED_VALUE_DESTINATION OCR4B
 
+#elif defined(__AVR_ATmega128RFA1__)
+    // for Smart Response XE or Sparkfun dev board
+    TCCR3A = _BV(WGM30); // Fast PWM 8 Bit
+    TCCR3B = _BV(WGM32) | _BV(CS30); // Fast PWM 8 Bit, direct clock
+
+    if (NonInvertedOutputPin) {
+        NonInvertedOutputPin = 3; // OC3A
+        pinMode(NonInvertedOutputPin, OUTPUT);
+        TCCR3A |= _BV(COM3A1); // OC3A non-inverting mode
+    }
+    if (InvertedOutputPin) {
+        InvertedOutputPin = 5; // OC3C
+        pinMode(InvertedOutputPin, OUTPUT);
+        TCCR3A |= _BV(COM3C1) | _BV(COM3C0); // OC3C inverting mode
+    }
+#define PWM_VALUE_DESTINATION OCR3A
+#define PWM_INVERTED_VALUE_DESTINATION OCR3C
+    
 #else // __AVR_ATmega32U4__
     /*
      * Plain ATmega e.g. 328P here
