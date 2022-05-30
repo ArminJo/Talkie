@@ -17,10 +17,10 @@
 //     or look for 'Solitude Standing' on your preferred music store.
 //            (Only this album contains the original a capella version)
 
-#ifndef TALKIE_VOCAB_TOMS_DINER_H_
-#define TALKIE_VOCAB_TOMS_DINER_H_
+#ifndef _TALKIE_VOCAB_TOMS_DINER_H
+#define _TALKIE_VOCAB_TOMS_DINER_H
 
 #include <Arduino.h>
 
 extern const uint8_t spDINER[] PROGMEM;
-#endif /* TALKIE_VOCAB_TOMS_DINER_H_ */
+#endif // _TALKIE_VOCAB_TOMS_DINER_H

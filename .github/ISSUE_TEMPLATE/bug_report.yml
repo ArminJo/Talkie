@@ -1,5 +1,5 @@
 name: "🐛 Bug Report"
-description: If something isn't working as expected 🤔.
+description: Only if something isn't working as expected 🤔, otherwise please open a discussion.
 title: "[Bug]: "
 
 body:
@@ -7,12 +7,11 @@ body:
     attributes:
       value: |
         **Thanks for reporting an issue!**
-        **Issues are expected to lead to changes in the repository, like code or documentation improvements or bug fixes.**
-        
-        If you have handling problems or questions, consider to post in [Discussions](../discussions) instead.
-        
-        # Environment
 
+        **Issues are expected to lead to changes in the repository, like code or documentation improvements or bug fixes.**
+        If you have handling problems or questions, consider to post in [Discussions](../discussions) instead.
+
+        # Environment
 
   - type: dropdown
     id: Board
@@ -22,7 +21,7 @@ body:
         - Arduino ATmega328* board (UNO, Nano, etc.)
         - Arduino ATmega2560 board (Mega)
         - Arduino ATmega32U4 board (Leonardo, etc.)
-        - Arduino megaAVR board (NanoEvery)
+        - Arduino ATmega4809 megaAVR board (NanoEvery)
         - Arduino SAMD board (Zero, MKR*)
         - ESP32 board
         - STM32 board
@@ -135,7 +134,7 @@ body:
   - type: textarea
     id: bug-context
     attributes:
-      label: Additional context
+      label: Additional context.
       description: Add any other context you can provide about the problem here.
     validations:
       required: false

@@ -7,7 +7,7 @@ Available as Arduino library "Talkie"
 [![Installation instructions](https://www.ardu-badge.com/badge/Talkie.svg?)](https://www.ardu-badge.com/Talkie)
 [![Commits since latest](https://img.shields.io/github/commits-since/ArminJo/Talkie/latest)](https://github.com/ArminJo/Talkie/commits/master)
 [![Build Status](https://github.com/ArminJo/Talkie/workflows/LibraryBuild/badge.svg)](https://github.com/ArminJo/Talkie/actions)
-[![Hit Counter](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2FArminJo%2FTalkie)](https://github.com/brentvollebregt/hit-counter)
+![Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=ArminJo_Talkie)
 
 ## Speech library for Arduino
 The original version can be found [here](https://github.com/going-digital/Talkie).<br/>
@@ -62,7 +62,7 @@ YouTube Intoduction by [Gadget Reboot](https://www.youtube.com/channel/UCwiKHTeg
 - using [Sloeber]ervo `write()` after a call to say... you must `detach()` and `attach()` the servo before first `write()` in order to initialize the timer again for Servo.
 - If you want to use **SPI** functions on ATmega328 **while Talkie is speaking**, then disable Talkies usage of pin 11 by `Talkie Voice(true, false);` instead of `Talkie Voice;` **or** `Voice.doNotUseInvertedOutput();`.
 - Porting to ATtinys is not possible, since they lack the hardware multiplication. ( Believe me, I tried it! )
-- I use the speakers from old earphones or headphones, which have approximately 16 to 32 Ohm, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a series capacitor of 1 to 10 uF do block the DC current. Look for the right polarity. The AC current is proportional to the rectance of the speaker, not its resistance in Ohm, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud -what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker or a power amplifier.
+- I use the speakers from old earphones or headphones, which have approximately 16 to 32 &ohm;, directly without a series resistor on my ATmegas. The headphone speaker tend to be much louder, especially when they stay in their original housings. If you do not connect the speaker between non inverted and inverted output, you must use a series capacitor of 1 to 10 uF do block the DC current. Look for the right polarity. The AC current is proportional to the rectance of the speaker, not its resistance in &ohm;, and it is between 10 and 40 mA. The latter is definitely out of specification for ATmegas but quite loud -what you hear is what you supply- and running for hours on my desk. If you are not sure, just use a piezo speaker or a power amplifier.
 
 ## Predefined vocabulary
 The predefined vocabulary can be found in the [Vocab\_\*.h files](https://github.com/ArminJo/Talkie/blob/master/src), especially in [Vocab_US_Large.h](https://github.com/ArminJo/Talkie/blob/master/src/Vocab_US_Large.h).
@@ -72,7 +72,7 @@ To create LPC data you can use the [python_wizard](https://github.com/ptwz/pytho
 
 Another way to create LPC data is to use [Qboxpro](http://ftp.whtech.com/pc%20utilities/qboxpro.zip), an unsupported old Windows application running under XP, which can produce Talkie compatible data streams. The missing BWCC.DLL (Borland Windows Custom Control Library) can be found e.g. [here](http://www.download-dll.com/dll-BWCC.dll.html).
 The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell&ss=9&i=2) and goes like this:
- - Create a new project using the following project parameters : Byte / 8 KHz / 5220 coding table
+ - Create a new project using the following project parameters : byte / 8 KHz / 5220 coding table
  - Goto Project and add the audio file
  - Choose process using : medium bit rate and pressing OK
  - Edit concatenation : insert concatenation after by adding a name; then insert phrase and press OK
@@ -96,21 +96,26 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
 
 # Compile options / macros for this library
 To customize the software to different requirements, there are some compile options / macros available.<br/>
-Modify it by commenting them out or in, or change the values if applicable. Or define the macro with the -D compiler option for global compile (the latter is not possible with the Arduino IDE, so consider using [Sloeber](https://eclipse.baeyens.it).<br/>
-| Option | Default | File | Description |
+Modify them by enabling / disabling them, or change the values if applicable.
+
+| Name | Default value | File | Description |
 |-|-|-|-|
 | `NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED` | disabled | Talkie.h | If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size. |
 | `FAST_8BIT_MODE` | disabled | Talkie.h | If defined we use 8bit instead of 16 bit coefficients K1 and K2. This saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega and has almost the same quality, except of a few "dropouts" e.g. in the word "thousand". |
 
-### Modifying compile options with Arduino IDE
+### Changing include (*.h) files with Arduino IDE
 First, use *Sketch > Show Sketch Folder (Ctrl+K)*.<br/>
-If you did not yet stored the example as your own sketch, then you are instantly in the right library folder.<br/>
+If you have not yet saved the example as your own sketch, then you are instantly in the right library folder.<br/>
 Otherwise you have to navigate to the parallel `libraries` folder and select the library you want to access.<br/>
-In both cases the library files itself are located in the `src` directory.<br/>
+In both cases the library source and include files are located in the libraries `src` directory.<br/>
+The modification must be renewed for each new library version!
 
-### Modifying compile options with Sloeber IDE
-If you are using Sloeber as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
-![Sloeber settings](https://github.com/ArminJo/ServoEasing/blob/master/pictures/SloeberDefineSymbols.png)
+### Modifying compile options / macros with PlatformIO
+If you are using PlatformIO, you can define the macros in the *[platformio.ini](https://docs.platformio.org/en/latest/projectconf/section_env_build.html)* file with `build_flags = -D MACRO_NAME` or `build_flags = -D MACRO_NAME=macroValue`.
+
+### Modifying compile options / macros with Sloeber IDE
+If you are using [Sloeber](https://eclipse.baeyens.it) as your IDE, you can easily define global symbols with *Properties > Arduino > CompileOptions*.<br/>
+![Sloeber settings](https://github.com/Arduino-IRremote/Arduino-IRremote/blob/master/pictures/SloeberDefineSymbols.png)
 
 # BluePill cores
 There are two cores for the PluePill.
@@ -127,7 +132,7 @@ The 8 kHz interrupt handling requires **8 탎** for Roger Clark core and **12 탎*
 
 ### Version 1.3.0
 - Removed blocking wait for ATmega32U4 Serial in examples.
-- 10 bit Coefficients are working now, but they do not sound better :-(.
+- 10 bit Coefficients are working now, but they do not sound better :disappointed:.
 - Tested on an ESP32.
 - Tested on a BluePill.
 
@@ -156,7 +161,7 @@ The 8 kHz interrupt handling requires **8 탎** for Roger Clark core and **12 탎*
 - Initial Arduino library version
 
 # CI
-Since Travis CI is unreliable and slow, the library examples are now tested with GitHub Actions for the following boards:
+The library examples are tested with GitHub Actions for the following boards:
 
 - arduino:avr:uno
 - arduino:avr:leonardo

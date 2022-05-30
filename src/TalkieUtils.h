@@ -22,12 +22,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
  */
 
-#ifndef TALKIEUTILS_H_
-#define TALKIEUTILS_H_
+#ifndef _TALKIE_UTILS_H
+#define _TALKIE_UTILS_H
 
 #include "Talkie.h"
 
@@ -39,4 +39,4 @@ int8_t sayQVoltageVolts(Talkie * aVoice, float aVolt);
 int8_t sayQPause(Talkie * aVoice);
 int8_t sayQTimeout(Talkie * aVoice);
 
-#endif /* TALKIEUTILS_H_ */
+#endif // _TALKIE_UTILS_H

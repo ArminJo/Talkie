@@ -10,14 +10,14 @@
  *  You can modify the HC-SR04 modules to 1 Pin mode by:
  *  Old module with 3 16 pin chips: Connect Trigger and Echo direct or use a resistor < 4.7 kOhm.
  *        If you remove both 10 kOhm pullup resistors you can use a connecting resistor < 47 kOhm, but I suggest to use 10 kOhm which is more reliable.
- *  Old module with 3 16 pin chips but with no pullup resistors near the connector row: Connect Trigger and Echo with a resistor > 200 Ohm. Use 10 kOhm.
- *  New module with 1 16 pin and 2 8 pin chips: Connect Trigger and Echo by a resistor > 200 Ohm and < 22 kOhm.
+ *  Old module with 3 16 pin chips but with no pullup resistors near the connector row: Connect Trigger and Echo with a resistor > 200 ohm. Use 10 kOhm.
+ *  New module with 1 16 pin and 2 8 pin chips: Connect Trigger and Echo by a resistor > 200 ohm and < 22 kOhm.
  *  All modules: Connect Trigger and Echo by a resistor of 4.7 kOhm.
  *  Some old HY-SRF05 modules of mine cannot be converted by adding a 4.7 kOhm resistor,
  *  since the output signal going low triggers the next measurement. But they work with removing the 10 kOhm pull up resistors and adding 10 kOhm.
  *
  * Sensitivity is increased by removing C3 / the low pass part of the 22 kHz Bandpass filter.
- * After this the crosstalking of the output signal will be detected as a low distance. We can avoid this by changing R7 to 0 Ohm.
+ * After this the crosstalking of the output signal will be detected as a low distance. We can avoid this by changing R7 to 0 ohm.
  *
  *  Module Type                   |   Characteristics     |         3 Pin Mode          | Increase sensitivity
  *  ------------------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
  */
 
@@ -87,11 +87,12 @@ void initUSDistancePin(uint8_t aTriggerOutEchoInPin) {
 
 /*
  * Start of standard blocking implementation using pulseInLong() since PulseIn gives wrong (too small) results :-(
- * @return 0 if uninitialized or timeout happened
+ * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, default timeout of 20000 micro seconds is 3.43 meter
+ * @return 0 / DISTANCE_TIMEOUT_RESULT if uninitialized or timeout happened
  */
 unsigned int getUSDistance(unsigned int aTimeoutMicros) {
     if (sHCSR04Mode == HCSR04_MODE_UNITITIALIZED) {
-        return 0;
+        return DISTANCE_TIMEOUT_RESULT;
     }
 
 // need minimum 10 usec Trigger Pulse
@@ -102,7 +103,7 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
         pinMode(sTriggerOutPin, OUTPUT);
     }
 
-#ifdef DEBUG
+#if defined(DEBUG)
     delayMicroseconds(100); // to see it on scope
 #else
     delayMicroseconds(10);
@@ -128,7 +129,7 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
      * At 20 degree celsius => 50cm gives 2914 us, 2m gives 11655 us
      *
      * Use pulseInLong, this uses micros() as counter, relying on interrupts being enabled, which is not disturbed by (e.g. the 1 ms timer) interrupts.
-     * Only thing is that the pulse ends when we are in an interrupt routine, thus prolonging the measured pulse duration.
+     * Only thing is, that the pulse ends when we are in an interrupt routine, thus prolonging the measured pulse duration.
      * I measured 6 us for the millis() and 14 to 20 us for the Servo signal generating interrupt. This is equivalent to around 1 to 3 mm distance.
      * Alternatively we can use pulseIn() in a noInterrupts() context, but this will effectively stop the millis() timer for duration of pulse / or timeout.
      */
@@ -137,32 +138,33 @@ unsigned int getUSDistance(unsigned int aTimeoutMicros) {
     unsigned long tUSPulseMicros = pulseIn(tEchoInPin, HIGH, aTimeoutMicros);
     interrupts();
 #else
-    unsigned long tUSPulseMicros = pulseInLong(tEchoInPin, HIGH, aTimeoutMicros);
+    unsigned long tUSPulseMicros = pulseInLong(tEchoInPin, HIGH, aTimeoutMicros); // returns 0 (DISTANCE_TIMEOUT_RESULT) for timeout
 #endif
     return tUSPulseMicros;
 }
 
+/*
+ * No return of 0 at
+ */
 unsigned int getCentimeterFromUSMicroSeconds(unsigned int aDistanceMicros) {
-    // The reciprocal of formula in getUSDistanceAsCentiMeterWithCentimeterTimeout()
+    // The reciprocal of formula in getUSDistanceAsCentimeterWithCentimeterTimeout()
     return (aDistanceMicros * 100L) / 5825;
 }
 
-/*
- * @return  Distance in centimeter @20 degree (time in us/58.25)
- *          0 if timeout or pins are not initialized
- *
- *          timeout of 5825 micros is equivalent to 1 meter
- *          Default timeout of 20000 micro seconds is 3.43 meter
+/**
+ * @param aTimeoutMicros timeout of 5825 micros is equivalent to 1 meter, 10000 is 1.71 m, default timeout of 20000 micro seconds is 3.43 meter
+ * @return  Distance in centimeter @20 degree celsius (time in us/58.25)
+ *          0 / DISTANCE_TIMEOUT_RESULT if timeout or pins are not initialized
  */
-unsigned int getUSDistanceAsCentiMeter(unsigned int aTimeoutMicros) {
+unsigned int getUSDistanceAsCentimeter(unsigned int aTimeoutMicros) {
     return (getCentimeterFromUSMicroSeconds(getUSDistance(aTimeoutMicros)));
 }
 
 // 58,23 us per centimeter (forth and back)
-unsigned int getUSDistanceAsCentiMeterWithCentimeterTimeout(unsigned int aTimeoutCentimeter) {
+unsigned int getUSDistanceAsCentimeterWithCentimeterTimeout(unsigned int aTimeoutCentimeter) {
 // The reciprocal of formula in getCentimeterFromUSMicroSeconds()
     unsigned int tTimeoutMicros = ((aTimeoutCentimeter * 233L) + 2) / 4; // = * 58.25 (rounded by using +1)
-    return getUSDistanceAsCentiMeter(tTimeoutMicros);
+    return getUSDistanceAsCentimeter(tTimeoutMicros);
 }
 
 /*
@@ -212,7 +214,7 @@ void handlePCInterrupt(uint8_t aPortState) {
         sUSPulseMicros = micros() - sMicrosAtStartOfPulse;
         sUSValueIsValid = true;
     }
-#ifdef DEBUG
+#if defined(DEBUG)
 // for debugging purposes, echo to PIN 13 (do not forget to set it to OUTPUT!)
 // digitalWrite(13, aPortState);
 #endif
@@ -256,7 +258,7 @@ ISR (PCINT1_vect) {
 
 #if (defined(USE_PIN_CHANGE_INTERRUPT_D0_TO_D7) | defined(USE_PIN_CHANGE_INTERRUPT_D8_TO_D13) | defined(USE_PIN_CHANGE_INTERRUPT_A0_TO_A5))
 
-void startUSDistanceAsCentiMeterWithCentimeterTimeoutNonBlocking(unsigned int aTimeoutCentimeter) {
+void startUSDistanceAsCentimeterWithCentimeterTimeoutNonBlocking(unsigned int aTimeoutCentimeter) {
 // need minimum 10 usec Trigger Pulse
     digitalWrite(sTriggerOutPin, HIGH);
     sUSValueIsValid = false;
@@ -268,7 +270,7 @@ void startUSDistanceAsCentiMeterWithCentimeterTimeoutNonBlocking(unsigned int aT
     sUSPulseMicros = 0;
     sMicrosAtStartOfPulse = 0;
 
-#ifdef DEBUG
+#if defined(DEBUG)
     delay(2); // to see it on scope
 #else
     delayMicroseconds(10);

@@ -71,7 +71,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
  */
 
@@ -81,7 +81,7 @@
 
 // Enable this if you want to measure timing by toggling pin 8 on an Arduino
 //#define MEASURE_TIMING
-#ifdef MEASURE_TIMING
+#if defined(MEASURE_TIMING)
 #include "digitalWriteFast.h"
 #  if defined(ARDUINO_ARCH_STM32)
 #define TIMING_PIN PA8
@@ -101,7 +101,7 @@ static uint16_t synthEnergy;
 static int32_t synthK1, synthK2;
 static int32_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
 #  else
-#  ifdef FAST_8BIT_MODE
+#  if defined(FAST_8BIT_MODE)
 static int8_t synthK1, synthK2;
 #  else
 static int16_t synthK1, synthK2;
@@ -284,7 +284,7 @@ void Talkie::initializeHardware() {
 #define DAC_PIN A0   // On some SAMD boards DAC0 definition is missing
 #endif
 #define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
-#  ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+#  if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
     static const int CPLAY_SPEAKER_SHUTDOWN= 11;
     pinMode(CPLAY_SPEAKER_SHUTDOWN, OUTPUT);
     digitalWrite(CPLAY_SPEAKER_SHUTDOWN, HIGH);
@@ -387,7 +387,7 @@ void Talkie::initializeHardware() {
     sTalkieSampleRateTimer.refresh(); // Reset to start values
 #endif // AVR
 
-#ifdef MEASURE_TIMING
+#if defined(MEASURE_TIMING)
     pinMode(TIMING_PIN, OUTPUT);
 #endif
 
@@ -395,7 +395,8 @@ void Talkie::initializeHardware() {
 }
 
 #if ! defined(PWM_VALUE_DESTINATION) && ! defined(PWM_OUTPUT_FUNCTION)
-#error One of PWM_VALUE_DESTINATION or PWM_OUTPUT_FUNCTION must be defined in initializeHardware()
+// One of PWM_VALUE_DESTINATION or PWM_OUTPUT_FUNCTION must be defined in initializeHardware()
+#error No DAC / PWM output funcion implemented for this CPU / board
 #endif
 
 void Talkie::terminateHardware() {
@@ -424,14 +425,14 @@ void Talkie::terminateHardware() {
         if (!(SPCR & _BV(SPE))) {
             pinMode(NonInvertedOutputPin, INPUT);
             // force initializing of tone library for the next time tone() is called.
-#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED // enable it to save Flash
+#if !defined(NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED) // enable it to save Flash
             noTone(NonInvertedOutputPin);
 #endif
         }
     }
     if (InvertedOutputPin) {
         pinMode(InvertedOutputPin, INPUT);
-#ifndef NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED
+#if !defined(NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED)
         noTone(InvertedOutputPin);
 #endif
     }
@@ -732,7 +733,7 @@ IRAM_ATTR
 #endif
 void timerInterrupt() {
 // 1286 byte compiled
-#ifdef MEASURE_TIMING
+#if defined(MEASURE_TIMING)
     digitalWriteFast(TIMING_PIN, HIGH);
 #endif
 
@@ -794,7 +795,7 @@ void timerInterrupt() {
     u4 = u5 - (((int16_t) synthK5 * x4) >> 7);
     u3 = u4 - (((int16_t) synthK4 * x3) >> 7);
     u2 = u3 - (((int16_t) synthK3 * x2) >> 7);
-#  ifdef FAST_8BIT_MODE
+#  if defined(FAST_8BIT_MODE)
     u1 = u2 - (((int16_t) synthK2 * x1) >> 7);
     u0 = u1 - (((int16_t) synthK1 * x0) >> 7);
 #  else
@@ -825,7 +826,7 @@ void timerInterrupt() {
     x5 = x4 + (((int16_t) synthK5 * u4) >> 7);
     x4 = x3 + (((int16_t) synthK4 * u3) >> 7);
     x3 = x2 + (((int16_t) synthK3 * u2) >> 7);
-#  ifdef FAST_8BIT_MODE
+#  if defined(FAST_8BIT_MODE)
     x2 = x1 + (((int16_t) synthK2 * u1) >> 7);
     x1 = x0 + (((int16_t) synthK1 * u0) >> 7);
 #  else
@@ -872,7 +873,7 @@ void timerInterrupt() {
     TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 #endif
 
-#ifdef MEASURE_TIMING
+#if defined(MEASURE_TIMING)
     digitalWriteFast(TIMING_PIN, LOW);
 #endif
 }

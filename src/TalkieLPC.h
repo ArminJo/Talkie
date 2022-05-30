@@ -24,12 +24,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
  */
 
-#ifndef SRC_LIB_TALKIE_TALKIELPC_H_
-#define SRC_LIB_TALKIE_TALKIELPC_H_
+#ifndef _TALKIE_LPC_H
+#define _TALKIE_LPC_H
 
 #include <inttypes.h>
 
@@ -41,7 +41,7 @@ static const uint8_t tmsPeriod[0x40] PROGMEM = {0, 16, 17, 18, 19, 20, 21, 22, 2
     36, 37, 38, 39, 40, 41, 42, 43, 45, 47, 49, 51, 53, 54, 57, 59, 61, 63, 66, 69, 71, 73, 77, 79, 81, 85, 87, 92, 95, 99, 102,
     106, 110, 115, 119, 123, 128, 133, 138, 143, 149, 154, 160};
 
-#  ifdef FAST_8BIT_MODE // for K1 and K2
+#  if defined(FAST_8BIT_MODE) // for K1 and K2
 /*
  * Use 8bit coefficients K1 and K2.
  * Saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega
@@ -112,4 +112,4 @@ static int8_t chirp[] = { 0x00, 0x03, 0x0f, 0x28, 0x4c, 0x6c, 0x71, 0x50, 0x25, 
 //static int8_t interploation_shift[] = { 0, 3, 3, 3, 2, 2, 1, 1 };
 #endif
 
-#endif /* SRC_LIB_TALKIE_TALKIELPC_H_ */
+#endif // _TALKIE_LPC_H

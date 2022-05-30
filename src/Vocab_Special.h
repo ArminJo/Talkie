@@ -7,11 +7,11 @@
 // Collection of special sounds
 //
 
-#ifndef TALKIE_VOCAB_SPECIAL_H_
-#define TALKIE_VOCAB_SPECIAL_H_
+#ifndef _TALKIE_VOCAB_SPECIAL_H
+#define _TALKIE_VOCAB_SPECIAL_H
 
 #include <Arduino.h>
 
 extern const uint8_t spPAUSE1[] PROGMEM;
 extern const uint8_t spPAUSE2[] PROGMEM;
-#endif /* TALKIE_VOCAB_SPECIAL_H_ */
+#endif // _TALKIE_VOCAB_SPECIAL_H

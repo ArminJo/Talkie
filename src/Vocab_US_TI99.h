@@ -16,8 +16,8 @@
 // Note that some words/letters are repeated with different spellings.
 // eg. 'TWO', 'TO', 'TOO' or 'YOU' and 'U'
 
-#ifndef TALKIE_VOCAB_US_TI99_H_
-#define TALKIE_VOCAB_US_TI99_H_
+#ifndef _TALKIE_VOCAB_US_TI99_H
+#define _TALKIE_VOCAB_US_TI99_H
 
 #include <Arduino.h>
 
@@ -381,4 +381,4 @@ extern const uint8_t spt_YOU_WIN[]           PROGMEM;
 extern const uint8_t spt_YOUR[]              PROGMEM;
 extern const uint8_t spt_Z[]                 PROGMEM;
 extern const uint8_t spt_ZERO[]              PROGMEM;
-#endif /* TALKIE_VOCAB_US_TI99_H_ */
+#endif // _TALKIE_VOCAB_US_TI99_H

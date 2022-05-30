@@ -10,8 +10,8 @@
 // A male voice with an RP English accent, voiced by Kenneth Kendall.
 //
 
-#ifndef TALKIE_VOCAB_US_ACORN_H_
-#define TALKIE_VOCAB_US_ACORN_H_
+#ifndef _TALKIE_VOCAB_US_ACORN_H
+#define _TALKIE_VOCAB_US_ACORN_H
 
 #include <Arduino.h>
 
@@ -182,5 +182,4 @@ extern const uint8_t spa_YEAR[]      PROGMEM;
 extern const uint8_t spa_YES[]       PROGMEM;
 extern const uint8_t spa_YOUR[]      PROGMEM;
 extern const uint8_t spa_Z[]         PROGMEM;
-#endif /* TALKIE_VOCAB_US_ACORN_H_ */
-
+#endif // _TALKIE_VOCAB_US_ACORN_H

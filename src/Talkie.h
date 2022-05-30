@@ -23,12 +23,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/gpl.html>.
+ *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
  *
  */
 
-#ifndef TALKIE_H_
-#define TALKIE_H_
+#ifndef _TALKIE_H
+#define _TALKIE_H
 
 #include <inttypes.h>
 
@@ -146,7 +146,4 @@ private:
  *  - Improved shifting code so Talkie now runs on 8 MHz Arduino (with millis() interrupt disabled while talking)
  */
 
-#endif // TALKIE_H_
-
-#pragma once
-
+#endif // _TALKIE_H

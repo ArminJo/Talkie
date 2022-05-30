@@ -42,7 +42,7 @@ jobs:
             platform-url: https://raw.githubusercontent.com/sparkfun/Arduino_Boards/master/IDE_Board_Manager/package_sparkfun_index.json # Arduino URL is not required here
 
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
-            platform-url: https://dl.espressif.com/dl/package_esp32_index.json
+            platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
       # Do not cancel all jobs / architectures if one job fails
       fail-fast: false

@@ -14,6 +14,8 @@
 // They also have good expression.
 //
 
+#ifndef _TALKIE_VOCAB_US_LARGE_H
+#define _TALKIE_VOCAB_US_LARGE_H
 #include <Arduino.h>
 
 // ROM VM61005
@@ -635,3 +637,4 @@ extern const uint8_t sp2_SOUTH[]         PROGMEM;
 extern const uint8_t sp2_TURN[]          PROGMEM;
 extern const uint8_t sp2_YELLOW[]        PROGMEM;
 
+#endif // _TALKIE_VOCAB_US_LARGE_H

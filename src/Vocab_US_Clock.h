@@ -9,8 +9,8 @@
 // A female voice with an American accent
 //
 
-#ifndef TALKIE_VOCAB_US_CLOCK_H_
-#define TALKIE_VOCAB_US_CLOCK_H_
+#ifndef _TALKIE_VOCAB_US_CLOCK_H
+#define _TALKIE_VOCAB_US_CLOCK_H
 
 #include <Arduino.h>
 
@@ -48,4 +48,4 @@ extern const uint8_t spc_GOOD[]      PROGMEM;
 extern const uint8_t spc_MORNING[]   PROGMEM;
 extern const uint8_t spc_AFTERNOON[] PROGMEM;
 extern const uint8_t spc_EVENING[]   PROGMEM;
-#endif /* TALKIE_VOCAB_US_CLOCK_H_ */
+#endif // _TALKIE_VOCAB_US_CLOCK_H
