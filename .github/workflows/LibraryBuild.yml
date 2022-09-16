@@ -19,7 +19,7 @@ jobs:
   build:
     name: ${{ matrix.arduino-boards-fqbn }} - test compiling examples
 
-    runs-on: ubuntu-18.04 # I picked Ubuntu to use shell scripts.
+    runs-on: ubuntu-latest # I picked Ubuntu to use shell scripts.
 
     strategy:
       matrix:
