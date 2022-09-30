@@ -29,7 +29,7 @@
 #include "Vocab_US_Large.h" // for timeout
 #include "Vocab_Special.h"
 
-#include "HCSR04.h"
+#include "HCSR04.hpp"
 
 /* Pin mapping table for different platforms
  *
