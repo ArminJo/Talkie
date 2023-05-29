@@ -195,7 +195,7 @@ The library examples are tested with GitHub Actions for the following boards:
 - arduino:sam:arduino_due_x
 - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
 - esp32:esp32:featheresp32:FlashFreq=80
-- STM32:stm32:GenF1:pnum=BLUEPILL_F103C8
+- STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8
 
 ## Requests for modifications / extensions
 Please write me a PM including your motivation/problem if you need a modification or an extension.
