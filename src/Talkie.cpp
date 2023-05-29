@@ -67,8 +67,8 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
@@ -170,8 +170,8 @@ void Talkie::initializeHardware() {
 // Enable the speech system whenever say() is called.
 #if defined(__AVR__)
 
-#if defined(__AVR_ATmega32U4__) // Use Timer 4 instead of Timer 2
-#  if defined(ARDUINO_AVR_CIRCUITPLAY) || defined(ARDUINO_AVR_PROMICRO)
+#  if defined(__AVR_ATmega32U4__) // Use Timer 4 instead of Timer 2
+#    if defined(ARDUINO_AVR_CIRCUITPLAY) || defined(ARDUINO_AVR_PROMICRO)
 // Adafruit Circuit Playground Classic or Sparkfun Pro Micro board. The first does not need inverted output, the latter does not connect it.
 // Cannot be used on plain Leonardos because inverted output is connected to internal led.
     NonInvertedOutputPin = 5;// D5/PC6/!OC4A
@@ -180,14 +180,14 @@ void Talkie::initializeHardware() {
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4A = _BV(COM4A0) | _BV(PWM4A);// Clear on match, PWMA on, OC4A/PC7 & !OC4A/PC6 connected
 
-#  elif defined(ARDUINO_AVR_ESPLORA)
+#    elif defined(ARDUINO_AVR_ESPLORA)
     NonInvertedOutputPin = 6; // Only D6/PD7/OC4D connected to Speaker
 #define PWM_VALUE_DESTINATION OCR4D
     InvertedOutputPin = TALKIE_DO_NOT_USE_PIN_FLAG; // disable InvertedOutputPin
     pinMode(NonInvertedOutputPin, OUTPUT);
     TCCR4C = _BV(COM4D1) |_BV(PWM4D);
 
-#  else
+#    else
 // Leonardo, Lilypad USB, FLORA, TEENSY
     NonInvertedOutputPin = 10;// D10/OC4B/PB6
 #define PWM_VALUE_DESTINATION OCR4B
@@ -201,7 +201,7 @@ void Talkie::initializeHardware() {
         // use only non Inverted output
         TCCR4A = _BV(COM4B1) | _BV(PWM4B);// Clear on match, PWMA on, OC4A connected
     }
-#  endif // ATmega32U4 flavors
+#    endif // ATmega32U4 flavors
 
 // common ATmega32U4
 // Set up Timer4 for fast PWM 200 kHz / 5 us
@@ -215,7 +215,7 @@ void Talkie::initializeHardware() {
     OCR4A = 127;// 50% duty to start
     OCR4B = 127;// 50% duty to start
 
-#elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+#  elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
     TCCR4A = _BV(WGM40); // Fast PWM 8 Bit
     TCCR4B = _BV(WGM42) | _BV(CS40);// Fast PWM 8 Bit, direct clock
 
@@ -232,7 +232,7 @@ void Talkie::initializeHardware() {
 #define PWM_VALUE_DESTINATION OCR4A
 #define PWM_INVERTED_VALUE_DESTINATION OCR4B
 
-#else // __AVR_ATmega32U4__
+#  else // __AVR_ATmega32U4__
     /*
      * Plain ATmega e.g. 328P here
      *
@@ -255,7 +255,7 @@ void Talkie::initializeHardware() {
 
     TCCR2B = _BV(CS20); // direct clock
     TIMSK2 = 0;
-#endif // __AVR_ATmega32U4__
+#  endif // __AVR_ATmega32U4__
 
     /*
      * Common code for all AVR
@@ -269,20 +269,20 @@ void Talkie::initializeHardware() {
     TCCR1A = 0;
     TCCR1B = _BV(WGM12) | _BV(CS10); // CTC mode, no prescale
     TCNT1 = 0;
-#if F_CPU <= 8000000L
+#  if F_CPU <= 8000000L
     TIMSK0 = 0; // // Tweak for 8 MHz clock - must disable millis() interrupt
-#endif
+#  endif
     OCR1A = ((F_CPU + (SAMPLE_RATE / 2)) / SAMPLE_RATE) - 1;  // 'SAMPLE_RATE' Hz (w/rounding)
     OCR1B = ((F_CPU + (SAMPLE_RATE / 2)) / SAMPLE_RATE) - 1;  // use the same value for register B
     TIMSK1 = _BV(OCIE1B); // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 #define _10_BIT_OUTPUT // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
-#if defined DAC0
+#  if defined DAC0
 #define DAC_PIN DAC0   // pin 14/A0 for Zero. PA02 + DAC1 on DUE
-#else
+#  else
 #define DAC_PIN A0   // On some SAMD boards DAC0 definition is missing
-#endif
+#  endif
 #define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
 #  if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
     static const int CPLAY_SPEAKER_SHUTDOWN= 11;
@@ -321,28 +321,31 @@ void Talkie::initializeHardware() {
 #define DAC_PIN 25 // Or 26
 #define PWM_OUTPUT_FUNCTION(nextPwm) dacWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
     // Use Timer1 with 1 microsecond resolution, main APB clock is 80MHZ
-#define APB_FREQUENCY_DIVIDER 80
-    sTalkieSampleRateTimer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
-    timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt, true);
-    timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
+#  define APB_FREQUENCY_DIVIDER 80
+    if(sTalkieSampleRateTimer == NULL) {
+        sTalkieSampleRateTimer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
+        timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt, true);
+        timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
+    }
     timerAlarmEnable(sTalkieSampleRateTimer);
-#if defined(DEBUG) && defined(ESP32)
+#  if defined(DEBUG) && defined(ESP32)
     Serial.print("CPU frequency=");
     Serial.print(getCpuFrequencyMHz());
     Serial.println("MHz");
     Serial.print("Timer clock frequency=");
     Serial.print(getApbFrequency());
     Serial.println("Hz");
-#endif
+#  endif
     // not required!
 //    dac_output_enable(DAC_CHANNEL_1);
 //    dac_output_voltage(DAC_CHANNEL_1, 255);
 
-    // BluePill in 2 flavors see https://samuelpinches.com.au/3d-printer/cutting-through-some-confusion-on-stm32-and-arduino/
-#elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1) // Recommended original Arduino_STM32 by Roger Clark.
+    // For BluePill in 2 flavors see https://samuelpinches.com.au/3d-printer/cutting-through-some-confusion-on-stm32-and-arduino/
+#elif defined(__STM32F1__) || defined(ARDUINO_ARCH_STM32F1)
+// Original Arduino_STM32 by Roger Clark.
     // STM32F1 architecture for "Generic STM32F103C series" from "STM32F1 Boards (Arduino_STM32)" of Arduino Board manager
     // http://dan.drown.org/stm32duino/package_STM32duino_index.json
-#define DAC_PIN PA3      // T2C4
+#define DAC_PIN PA3      // T2C4 - If the STM has a built in DAC, better use its pin.
 #define _10_BIT_OUTPUT
 #define PWM_OUTPUT_FUNCTION(nextPwm) timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannel, nextPwm)
 
@@ -369,10 +372,11 @@ void Talkie::initializeHardware() {
     sTalkieSampleRateTimer.refresh(); // Reset to start values
 
 #elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
-    // STM32duino by ST Microsystems.
-    // https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json
-    // stm32 architecture for "Generic STM32F1 series" from "STM32 Boards (selected from submenu)" of Arduino Board manager
-#define DAC_PIN PA3      // T2C4
+// STM32duino by ST Microsystems.
+// https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
+// stm32 architecture for "Generic STM32F1 series" from "STM32 Boards (selected from submenu)" of Arduino Board manager
+#define DAC_PIN PA3      // T2C4  - If the STM has a built in DAC, better use its pin.
+
 #define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
 #define _10_BIT_OUTPUT
     analogWriteResolution(10);
@@ -441,7 +445,9 @@ void Talkie::terminateHardware() {
     tcEnd();
 
 #elif defined(ESP32)
-    timerAlarmDisable(sTalkieSampleRateTimer);
+    if(sTalkieSampleRateTimer != NULL) {
+        timerAlarmDisable(sTalkieSampleRateTimer);
+    }
 
 #elif defined(TEENSYDUINO)
     sIntervalTimer.end();
