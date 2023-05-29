@@ -34,6 +34,7 @@ jobs:
           - SparkFun:avr:promicro
           - esp32:esp32:featheresp32:FlashFreq=80
           - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8
+          - STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
           - stm32duino:STM32F1:genericSTM32F103C
 
         include:
@@ -46,10 +47,13 @@ jobs:
           - arduino-boards-fqbn: esp32:esp32:featheresp32:FlashFreq=80
             platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
-          - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM version
+          - arduino-boards-fqbn: STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8 # STM core
             platform-url: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
 
-          - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark version
+          - arduino-boards-fqbn: STMicroelectronics:stm32:Nucleo_32:pnum=NUCLEO_L432KC
+            platform-url: https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json
+
+          - arduino-boards-fqbn: stm32duino:STM32F1:genericSTM32F103C # Roger Clark core
             platform-url: http://dan.drown.org/stm32duino/package_STM32duino_index.json
 
       # Do not cancel all jobs / architectures if one job fails

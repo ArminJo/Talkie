@@ -32,10 +32,19 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.3.1"
+#define VERSION_TALKIE "1.3.2"
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 3
+#define VERSION_TALKIE_PATCH 2
+
 // The change log is at the bottom of the file
+
+/*
+ * Macro to convert 3 version parts into an integer
+ * To be used in preprocessor comparisons, such as #if VERSION_TALKIE_HEX >= VERSION_HEX_VALUE(3, 0, 0)
+ */
+#define VERSION_HEX_VALUE(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
+#define VERSION_TALKIE_HEX  VERSION_HEX_VALUE(VERSION_TALKIE_MAJOR, VERSION_TALKIE_MINOR, VERSION_TALKIE_PATCH)
 
 // If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size :-)
 //#define NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED
@@ -108,6 +117,9 @@ private:
 };
 
 /*
+ * Version 1.3.2
+ * - Fixed ESP32 timer bug.
+ *
  * Version 1.3.1
  * - Improved SAMD support.
  *

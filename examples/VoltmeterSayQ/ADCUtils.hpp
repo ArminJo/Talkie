@@ -15,8 +15,8 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/gpl.html>.
@@ -599,10 +599,10 @@ float getTemperature(void) {
 #endif
 }
 
-#elif defined(ARDUINO_ARCH_APOLLO3) // defined(__AVR__) && defined(ADATE)
+#elif defined(ARDUINO_ARCH_APOLLO3) // defined(ADC_UTILS_ARE_AVAILABLE)
     void ADCUtilsDummyToAvoidBFDAssertions(){
         ;
     }
-#endif // defined(__AVR__) && defined(ADATE)
+#endif // defined(ADC_UTILS_ARE_AVAILABLE)
 
 #endif // _ADC_UTILS_HPP

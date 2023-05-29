@@ -152,6 +152,9 @@ If you are using [Sloeber](https://eclipse.baeyens.it) as your IDE, you can easi
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)
 
 # Revision History
+### Version 1.3.2
+- Fixed ESP32 timer bug.
+
 ### Version 1.3.1
 - Updated _1_Voltmeter example and renamed example names.
 - Improved SAMD support.
