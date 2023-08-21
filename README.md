@@ -114,15 +114,14 @@ The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell
 
 # OUTPUT FILTER
 ```
-    C to avoid clicks  Low pass 1600Hz  DC decoupling (optional)
-                      _____
-  D3 >------||-------| 10k |---+----------||-------> to Power amplifier
-           100nF      -----    |         10nF
-                              ---
-                              --- 10 nF
-                               |
-                               |
-                               _ GND
+C to avoid clicks | Low pass 1600Hz
+                   _____
+  D3 >-----||-----|_____|-----+-----> to Power amplifier
+         100nF      10k       |
+                             ---
+                             --- 10 nF
+                              |
+                             _|_ GND
  ```
 
 # Compile options / macros for this library
@@ -130,7 +129,7 @@ To customize the software to different requirements, there are some compile opti
 Modify them by enabling / disabling them, or change the values if applicable.
 
 | Name | Default value | File | Description |
-|-|-|-|-|
+|-|-:|-|-|
 | `NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED` | disabled | Talkie.h | If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size. |
 | `FAST_8BIT_MODE` | disabled | Talkie.h | If defined we use 8bit instead of 16 bit coefficients K1 and K2. This saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega and has almost the same quality, except of a few "dropouts" e.g. in the word "thousand". |
 
