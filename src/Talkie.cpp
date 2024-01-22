@@ -958,12 +958,19 @@ static void setNextSynthesizerData() {
     }
 }
 
+#define WAIT_TC16_REGS_SYNC(x) while(x->COUNT16.STATUS.bit.SYNCBUSY);
+
 #if defined(ARDUINO_ARCH_SAMD)
 static void tcReset() {
     // Reset TCx
     TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
-    while (TC5->COUNT16.STATUS.bit.SYNCBUSY)
-        ;
+
+#if defined(__SAMD51__)
+        while(TC5->COUNT16.SYNCBUSY.bit.COUNT);
+#else
+        WAIT_TC16_REGS_SYNC(TC5)
+#endif
+
     while (TC5->COUNT16.CTRLA.bit.SWRST)
         ;
 }
@@ -981,13 +988,35 @@ static void tcEnd() {
 
 static void tcStart(uint32_t sampleRate) {
 // Enable GCLK for TCC2 and TC5 (timer counter input clock)
+
+#if defined(__SAMD51__)
+    int idx = 30;                    // TC4, TC5
+    GCLK->PCHCTRL[idx].bit.GEN  = 0; // Select GCLK0 as periph clock source
+    GCLK->PCHCTRL[idx].bit.CHEN = 1; // Enable peripheral
+    while(!GCLK->PCHCTRL[idx].bit.CHEN);
+#else
     GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)); // GCLK1=32kHz,  GCLK0=48MHz
+#endif
     //    while (GCLK->STATUS.bit.SYNCBUSY) // not required to wait
     //        ;
     tcReset();
 
 // Set Timer counter Mode to 16 bits, Set TC5 mode as match frequency
+#if defined(__SAMD51__)
+    TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16;
+    TC5->COUNT16.WAVE.reg |= TC_WAVE_WAVEGEN_MFRQ;
+    TC5->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_ENABLE;
+
+#if(F_CPU > 200000000)
+    TC5->COUNT16.CTRLA.bit.PRESCALER = TCC_CTRLA_PRESCALER_DIV128_Val;
+#else
+    // At 120-200 MHz GCLK this is 1875-3125 ticks per millisecond
+    TC5->COUNT16.CTRLA.bit.PRESCALER = TCC_CTRLA_PRESCALER_DIV64_Val;
+#endif
+
+#else
     TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16 | TC_CTRLA_WAVEGEN_MFRQ | TC_CTRLA_PRESCALER_DIV1 | TC_CTRLA_ENABLE;
+#endif
     TC5->COUNT16.CC[0].reg = (uint16_t) (SystemCoreClock / sampleRate - 1);
     //    while (TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY) // The next commands do an implicit wait :-)
     //        ;
