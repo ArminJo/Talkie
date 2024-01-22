@@ -28,6 +28,10 @@ A good explanation of the TMS5220 operation and the LPC frame format can be foun
 
 </div>
 
+#### If you find this library useful, please give it a star.
+
+&#x1F30E; [Google Translate](https://translate.google.com/translate?sl=en&u=https://github.com/ArminJo/Talkie)
+
 <br/>
 
 # YouTube Videos
@@ -198,8 +202,3 @@ The library examples are tested with GitHub Actions for the following boards:
 - esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
 - esp32:esp32:featheresp32:FlashFreq=80
 - STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8
-
-## Requests for modifications / extensions
-Please write me a PM including your motivation/problem if you need a modification or an extension.
-
-#### If you find this library useful, please give it a star.

@@ -958,17 +958,17 @@ static void setNextSynthesizerData() {
     }
 }
 
-#define WAIT_TC16_REGS_SYNC(x) while(x->COUNT16.STATUS.bit.SYNCBUSY);
-
 #if defined(ARDUINO_ARCH_SAMD)
 static void tcReset() {
     // Reset TCx
     TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
 
 #if defined(__SAMD51__)
-        while(TC5->COUNT16.SYNCBUSY.bit.COUNT);
+    while(TC5->COUNT16.SYNCBUSY.bit.COUNT)
+        ;
 #else
-        WAIT_TC16_REGS_SYNC(TC5)
+    while (TC5->COUNT16.STATUS.bit.SYNCBUSY)
+        ;
 #endif
 
     while (TC5->COUNT16.CTRLA.bit.SWRST)
