@@ -318,16 +318,34 @@ void Talkie::initializeHardware() {
 #  endif // (DAC_PIN)
 
 #elif defined(ESP32)
+#  if !defined(ESP_ARDUINO_VERSION)
+#define ESP_ARDUINO_VERSION 0
+#  endif
+#  if !defined(ESP_ARDUINO_VERSION_VAL)
+#define ESP_ARDUINO_VERSION_VAL(major, minor, patch) 202
+#  endif
+
 #define DAC_PIN 25 // Or 26
 #define PWM_OUTPUT_FUNCTION(nextPwm) dacWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
     // Use Timer1 with 1 microsecond resolution, main APB clock is 80MHZ
 #  define APB_FREQUENCY_DIVIDER 80
     if(sTalkieSampleRateTimer == NULL) {
-        sTalkieSampleRateTimer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
-        timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt, true);
-        timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
+#  if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)  // timerAlarm() enables it automatically
+    sTalkieSampleRateTimer = timerBegin(1000000);   // Only 1 parameter is required. 1000000 corresponds to 1 MHz / 1 uSec
+    timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt);
+    timerAlarm(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true, 0);   // 0 in the last parameter is repeat forever
+#  else
+    sTalkieSampleRateTimer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
+    timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt, true);
+    timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
+#  endif
+
     }
+#  if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)  // timerAlarm() enables it automatically
+    timerStart(sTalkieSampleRateTimer);
+#  else
     timerAlarmEnable(sTalkieSampleRateTimer);
+#  endif
 #  if defined(DEBUG) && defined(ESP32)
     Serial.print("CPU frequency=");
     Serial.print(getCpuFrequencyMHz());
@@ -446,7 +464,11 @@ void Talkie::terminateHardware() {
 
 #elif defined(ESP32)
     if(sTalkieSampleRateTimer != NULL) {
+#    if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+        timerStop(sTalkieSampleRateTimer);
+#    else
         timerAlarmDisable(sTalkieSampleRateTimer);
+#    endif
     }
 
 #elif defined(TEENSYDUINO)

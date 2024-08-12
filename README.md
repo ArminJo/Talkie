@@ -20,7 +20,7 @@ Available as [Arduino library "Talkie"](https://www.arduinolibraries.info/librar
 
 [![Button Install](https://img.shields.io/badge/Install-brightgreen?logoColor=white&logo=GitBook)](https://www.ardu-badge.com/Talkie)
  &nbsp; &nbsp; 
-[![Button Changelog](https://img.shields.io/badge/Changelog-blue?logoColor=white&logo=AzureArtifacts)](https://github.com/ArminJo/Talkie#revision-history)
+[![Button Changelog](https://img.shields.io/badge/Changelog-blue?logoColor=white&logo=AzureArtifacts)](https://github.com/ArminJo/Talkie?tab=readme-ov-file#revision-history)
 
 <br/>
 The original version can be found [here](https://github.com/going-digital/Talkie).<br/>
@@ -104,7 +104,7 @@ The 8 kHz interrupt handling requires **8 &micro;s** for Roger Clark core and **
 The predefined vocabulary can be found in the [Vocab\_\*.h files](https://github.com/ArminJo/Talkie/blob/master/src), especially in [Vocab_US_Large.h](https://github.com/ArminJo/Talkie/blob/master/src/Vocab_US_Large.h).
 
 # Own vocabulary
-To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) like described [here](https://youtu.be/KQseCA0nftI) or the [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
+To create LPC data you can use the [python_wizard](https://github.com/ptwz/python_wizard) or the [BlueWizard](https://github.com/patrick99e99/BlueWizard) for Mac OS X.
 
 Another way to create LPC data is to use [Qboxpro](http://ftp.whtech.com/pc%20utilities/qboxpro.zip), an unsupported old Windows application running under XP, which can produce Talkie compatible data streams. The missing BWCC.DLL (Borland Windows Custom Control Library) can be found e.g. [here](http://www.download-dll.com/dll-BWCC.dll.html).
 The process is described [here](http://furrtek.free.fr/index.php?a=speakandspell&ss=9&i=2) and goes like this:

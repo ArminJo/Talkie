@@ -62,7 +62,7 @@ jobs:
     steps:
       # First of all, we clone the repo using the `checkout` action.
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@master
 
       - name: Compile all examples using the arduino-test-compile action
         uses: ArminJo/arduino-test-compile@master
