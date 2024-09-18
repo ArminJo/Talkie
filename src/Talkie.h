@@ -32,10 +32,10 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.3.2"
+#define VERSION_TALKIE "1.3.3"
 #define VERSION_TALKIE_MAJOR 1
 #define VERSION_TALKIE_MINOR 3
-#define VERSION_TALKIE_PATCH 2
+#define VERSION_TALKIE_PATCH 3
 
 // The change log is at the bottom of the file
 
@@ -117,6 +117,9 @@ private:
 };
 
 /*
+ * Version 1.3.3
+ * - Adding support for SAMD51 and ESP32 core 3.x.
+ *
  * Version 1.3.2
  * - Fixed ESP32 timer bug.
  *
