@@ -58,16 +58,6 @@
 #define Serial SerialUSB
 #endif
 
-#if defined(ESP32)
-/*
- * Send serial info over Bluetooth
- * Use the Serial Bluetooth Terminal app and connect to ESP32_Talkie
- */
-#include "BluetoothSerial.h"
-BluetoothSerial SerialBT;
-#define Serial SerialBT // redirect all Serial output to Bluetooth
-#endif
-
 /*
  * Voice PWM output pins for different ATmegas:
  *  ATmega328 (Uno and Nano): non inverted at pin 3, inverted at pin 11.
@@ -85,14 +75,10 @@ Talkie Voice;
 void setup() {
 //    pinMode(LED_BUILTIN, OUTPUT);
 
-#if defined(ESP32) && defined(Serial)
-    Serial.begin("ESP32_Talkie", false);
-#else
     Serial.begin(115200);
     while (!Serial)
         ; // Wait for Serial to become available. Is optimized away for some cores.
 
-#endif
 #if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/ \
     || defined(SERIALUSB_PID)  || defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_attiny3217) || (defined (USBCON) && defined(USBD_USE_CDC))
     delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!

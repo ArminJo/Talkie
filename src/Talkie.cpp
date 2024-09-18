@@ -331,7 +331,7 @@ void Talkie::initializeHardware() {
 #  define APB_FREQUENCY_DIVIDER 80
     if(sTalkieSampleRateTimer == NULL) {
 #  if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)  // timerAlarm() enables it automatically
-    sTalkieSampleRateTimer = timerBegin(1000000);   // Only 1 parameter is required. 1000000 corresponds to 1 MHz / 1 uSec
+    sTalkieSampleRateTimer = timerBegin(1000000); // Only 1 parameter is required. 1000000 corresponds to 1 MHz / 1 uSec. After successful setup the timer will automatically start.
     timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt);
     timerAlarm(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true, 0);   // 0 in the last parameter is repeat forever
 #  else
@@ -465,7 +465,7 @@ void Talkie::terminateHardware() {
 #elif defined(ESP32)
     if(sTalkieSampleRateTimer != NULL) {
 #    if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-        timerStop(sTalkieSampleRateTimer);
+        timerStop(sTalkieSampleRateTimer); // maybe timerEnd() is better, because it releases the hardware?
 #    else
         timerAlarmDisable(sTalkieSampleRateTimer);
 #    endif
