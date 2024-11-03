@@ -7,7 +7,7 @@
  *  Talkie is a speech library for Arduino.
  *  GaryA 10/2018 added the original sayNumber() function
  *
- *  Copyright (C) 2018  Armin Joachimsmeyer
+ *  Copyright (C) 2018-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Talkie https://github.com/ArminJo/Talkie.
@@ -40,155 +40,153 @@
 #  endif
 #endif
 
-int8_t sayQDigit(Talkie * aVoice, char aDigit) {
-    return sayQNumber(aVoice, aDigit - '0');
+int8_t sayQDigit(Talkie *aVoice, char aDigit, unsigned int aSampleRateForPitch) {
+    return sayQNumber(aVoice, aDigit - '0', aSampleRateForPitch);
 }
 
-int8_t sayQVoltageMilliVolts(Talkie * aVoice, long aMilliVolt) {
-    sayQNumber(aVoice, aMilliVolt);
-    aVoice->sayQ(sp2_MILLI);
-    return aVoice->sayQ(sp2_VOLTS);
+int8_t sayQVoltageMilliVolts(Talkie *aVoice, long aMilliVolt, unsigned int aSampleRateForPitch) {
+    sayQNumber(aVoice, aMilliVolt, aSampleRateForPitch);
+    aVoice->sayQ(sp2_MILLI, aSampleRateForPitch);
+    return aVoice->sayQ(sp2_VOLTS, aSampleRateForPitch);
 }
 
-int8_t sayQVoltageVolts(Talkie * aVoice, float aVolt) {
-    sayQFloat(aVoice, aVolt, 2, true, true);
-    return aVoice->sayQ(sp2_VOLTS);
+int8_t sayQVoltageVolts(Talkie *aVoice, float aVolt, unsigned int aSampleRateForPitch) {
+    sayQFloat(aVoice, aVolt, 2, true, true, aSampleRateForPitch);
+    return aVoice->sayQ(sp2_VOLTS, aSampleRateForPitch);
 }
 
-int8_t sayQPause(Talkie * aVoice) {
-    return aVoice->sayQ(spPAUSE1);
+int8_t sayQPause(Talkie *aVoice, unsigned int aSampleRateForPitch) {
+    return aVoice->sayQ(spPAUSE1, aSampleRateForPitch);
 }
 
-int8_t sayQTimeout(Talkie * aVoice) {
-    aVoice->sayQ(sp2_TIME);
-    return aVoice->sayQ(sp2_OUT);
+int8_t sayQTimeout(Talkie *aVoice, unsigned int aSampleRateForPitch) {
+    aVoice->sayQ(sp2_TIME, aSampleRateForPitch);
+    return aVoice->sayQ(sp2_OUT, aSampleRateForPitch);
 }
 
 /* sayQ any number between -999,999 and 999,999 */
-int8_t sayQNumber(Talkie * aVoice, long aNumber) {
+int8_t sayQNumber(Talkie *aVoice, long aNumber, unsigned int aSampleRateForPitch) {
     if (aNumber < 0) {
-        aVoice->sayQ(sp2_MINUS);
-        sayQNumber(aVoice, -aNumber);
+        aVoice->sayQ(sp2_MINUS, aSampleRateForPitch);
+        sayQNumber(aVoice, -aNumber, aSampleRateForPitch);
     } else if (aNumber == 0) {
-        aVoice->sayQ(sp2_ZERO);
+        aVoice->sayQ(sp2_ZERO, aSampleRateForPitch);
     } else {
         if (aNumber >= 1000) {
             int thousands = aNumber / 1000;
-            sayQNumber(aVoice, thousands);
+            sayQNumber(aVoice, thousands, aSampleRateForPitch);
             aVoice->sayQ(sp2_THOUSAND);
             aNumber %= 1000;
-            if ((aNumber > 0) && (aNumber < 100))
-                aVoice->sayQ(sp2_AND);
+            if ((aNumber > 0) && (aNumber < 100)) aVoice->sayQ(sp2_AND, aSampleRateForPitch);
         }
         if (aNumber >= 100) {
             int hundreds = aNumber / 100;
-            sayQNumber(aVoice, hundreds);
-            aVoice->sayQ(sp2_HUNDRED);
+            sayQNumber(aVoice, hundreds, aSampleRateForPitch);
+            aVoice->sayQ(sp2_HUNDRED, aSampleRateForPitch);
             aNumber %= 100;
-            if (aNumber > 0)
-                aVoice->sayQ(sp2_AND);
+            if (aNumber > 0) aVoice->sayQ(sp2_AND, aSampleRateForPitch);
         }
         if (aNumber > 19) {
             int tens = aNumber / 10;
             switch (tens) {
             case 2:
-                aVoice->sayQ(sp2_TWENTY);
+                aVoice->sayQ(sp2_TWENTY, aSampleRateForPitch);
                 break;
             case 3:
-                aVoice->sayQ(sp2_THIR_);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_THIR_, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             case 4:
-                aVoice->sayQ(sp2_FOUR);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_FOUR, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             case 5:
-                aVoice->sayQ(sp2_FIF_);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_FIF_, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             case 6:
-                aVoice->sayQ(sp2_SIX);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_SIX, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             case 7:
-                aVoice->sayQ(sp2_SEVEN);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_SEVEN, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             case 8:
-                aVoice->sayQ(sp2_EIGHT);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_EIGHT, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             case 9:
-                aVoice->sayQ(sp2_NINE);
-                aVoice->sayQ(sp2_T);
+                aVoice->sayQ(sp2_NINE, aSampleRateForPitch);
+                aVoice->sayQ(sp2_T, aSampleRateForPitch);
                 break;
             }
             aNumber %= 10;
         }
         switch (aNumber) {
         case 1:
-            aVoice->sayQ(sp2_ONE);
+            aVoice->sayQ(sp2_ONE, aSampleRateForPitch);
             break;
         case 2:
-            aVoice->sayQ(sp2_TWO);
+            aVoice->sayQ(sp2_TWO, aSampleRateForPitch);
             break;
         case 3:
-            aVoice->sayQ(sp2_THREE);
+            aVoice->sayQ(sp2_THREE, aSampleRateForPitch);
             break;
         case 4:
-            aVoice->sayQ(sp2_FOUR);
+            aVoice->sayQ(sp2_FOUR, aSampleRateForPitch);
             break;
         case 5:
-            aVoice->sayQ(sp2_FIVE);
+            aVoice->sayQ(sp2_FIVE, aSampleRateForPitch);
             break;
         case 6:
-            aVoice->sayQ(sp2_SIX);
+            aVoice->sayQ(sp2_SIX, aSampleRateForPitch);
             break;
         case 7:
-            aVoice->sayQ(sp2_SEVEN);
+            aVoice->sayQ(sp2_SEVEN, aSampleRateForPitch);
             break;
         case 8:
-            aVoice->sayQ(sp2_EIGHT);
+            aVoice->sayQ(sp2_EIGHT, aSampleRateForPitch);
             break;
         case 9:
-            aVoice->sayQ(sp2_NINE);
+            aVoice->sayQ(sp2_NINE, aSampleRateForPitch);
             break;
         case 10:
-            aVoice->sayQ(sp2_TEN);
+            aVoice->sayQ(sp2_TEN, aSampleRateForPitch);
             break;
         case 11:
-            aVoice->sayQ(sp2_ELEVEN);
+            aVoice->sayQ(sp2_ELEVEN, aSampleRateForPitch);
             break;
         case 12:
-            aVoice->sayQ(sp2_TWELVE);
+            aVoice->sayQ(sp2_TWELVE, aSampleRateForPitch);
             break;
         case 13:
-            aVoice->sayQ(sp2_THIR_);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_THIR_, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         case 14:
-            aVoice->sayQ(sp2_FOUR);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_FOUR, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         case 15:
-            aVoice->sayQ(sp2_FIF_);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_FIF_, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         case 16:
-            aVoice->sayQ(sp2_SIX);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_SIX, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         case 17:
-            aVoice->sayQ(sp2_SEVEN);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_SEVEN, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         case 18:
-            aVoice->sayQ(sp2_EIGHT);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_EIGHT, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         case 19:
-            aVoice->sayQ(sp2_NINE);
-            aVoice->sayQ(sp2__TEEN);
+            aVoice->sayQ(sp2_NINE, aSampleRateForPitch);
+            aVoice->sayQ(sp2__TEEN, aSampleRateForPitch);
             break;
         }
     }
@@ -196,11 +194,12 @@ int8_t sayQNumber(Talkie * aVoice, long aNumber) {
 }
 
 #define LENGT_OF_FLOAT_STRING 14
-int8_t sayQFloat(Talkie * aVoice, float aFloat, int aDecimalPlaces, bool aSuppressLeadingZero, bool aSuppressTrailingZero) {
+int8_t sayQFloat(Talkie *aVoice, float aFloat, int aDecimalPlaces, bool aSuppressLeadingZero, bool aSuppressTrailingZero,
+        unsigned int aSampleRateForPitch) {
     // First the integer part
     long tIntegerPart = aFloat;
     if (tIntegerPart != 0 || !aSuppressLeadingZero) {
-        sayQNumber(aVoice, tIntegerPart);
+        sayQNumber(aVoice, tIntegerPart, aSampleRateForPitch);
     }
     if (aDecimalPlaces > 0) {
         // convert to string, this avoids rounding errors like 0.654 * 10 = 6,5399
@@ -216,11 +215,11 @@ int8_t sayQFloat(Talkie * aVoice, float aFloat, int aDecimalPlaces, bool aSuppre
         }
         // output decimal places digits if available
         if (i < LENGT_OF_FLOAT_STRING - 2) {
-            aVoice->sayQ(sp2_POINT);
+            aVoice->sayQ(sp2_POINT, aSampleRateForPitch);
             for (int j = 0; j < aDecimalPlaces; ++j) {
                 // suppress zero at last position
                 if (!(tFloatString[i] == '0' && aSuppressTrailingZero && j == aDecimalPlaces - 1)) {
-                    sayQNumber(aVoice, tFloatString[i] - '0');
+                    sayQNumber(aVoice, tFloatString[i] - '0', aSampleRateForPitch);
                     // check for end of string
                     i++;
                     if (tFloatString[i] == '\0') {

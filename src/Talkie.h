@@ -7,7 +7,7 @@
  *  Talkie is a speech library for Arduino.
  *  Output is at pin 3 + 11
  *
- *  Copyright (C) 2018  Armin Joachimsmeyer
+ *  Copyright (C) 2018-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Talkie https://github.com/ArminJo/Talkie.
@@ -32,12 +32,17 @@
 
 #include <inttypes.h>
 
-#define VERSION_TALKIE "1.3.3"
+#define VERSION_TALKIE "1.4.0"
 #define VERSION_TALKIE_MAJOR 1
-#define VERSION_TALKIE_MINOR 3
-#define VERSION_TALKIE_PATCH 3
+#define VERSION_TALKIE_MINOR 4
+#define VERSION_TALKIE_PATCH 0
 
 // The change log is at the bottom of the file
+
+//#define ENABLE_PITCH // requires around 160 bytes of program space
+
+#define ORIGINAL_SAMPLE_RATE 8000 // Speech engine sample rate
+#define SAMPLE_RATE_DEFAULT     ORIGINAL_SAMPLE_RATE // If you want to globally set pitch for Talkie, you can change this value, this saves the overhead implied by activating ENABLE_PITCH
 
 /*
  * Macro to convert 3 version parts into an integer
@@ -55,7 +60,6 @@
  * has almost the same quality, except of a few "dropouts" e.g. in the word "thousand"
  */
 //#define FAST_8BIT_MODE
-
 #if defined(__AVR__)
 #if !defined(__AVR_ATmega32U4__) && !defined(TCCR2A)
 #error Sorry, when using an AVR chip, Talkie requires Timer2. This board does not have one.
@@ -75,8 +79,8 @@ public:
     Talkie();
     Talkie(bool aUseNonInvertedOutputPin, bool aUseInvertedOutputPin);
     void beginPWM(uint8_t aPinPWM); // // To be compatible to Teensy library
-    void say(const uint8_t *aWordDataAddress); // Blocking version
-    int8_t sayQ(const uint8_t *aWordDataAddress); // Queuing version. Returns free space in FIFO
+    void say(const uint8_t *aWordDataAddress, unsigned int aSampleRateForPitch = ORIGINAL_SAMPLE_RATE); // Blocking version with pitch
+    int8_t sayQ(const uint8_t *aWordDataAddress, unsigned int aSampleRateForPitch = ORIGINAL_SAMPLE_RATE); // Queuing version. Returns free space in FIFO
     void wait(); // wait for sayQ to end
     void stop(); // allow the actual word to end -> only clears the FIFO guarded with cli and sei
     void terminate(); // terminate synthesizer directly
@@ -93,7 +97,7 @@ public:
     uint8_t NonInvertedOutputPin; // Pin number of output, maybe fixed for some boards. On Arduino enables pin 3 (Talkie default) as PWM output. 0xFF -> Enable output (default). 0 -> Disable output.
     uint8_t InvertedOutputPin;    // On Arduino enables pin 11 as inverted PWM output to increase the volume.
 
-    const uint8_t * volatile WordDataPointer; // Pointer to word data array !!! Must be volatile, since it is accessed also by ISR
+    const uint8_t *volatile WordDataPointer; // Pointer to word data array !!! Must be volatile, since it is accessed also by ISR
     uint8_t WordDataBit; // [0-7] bit number of next bit in array bitstream
     volatile bool isTalkingFlag;
     uint8_t getNumberOfWords(); // Returns 0 if nothing to play, otherwise the number of the queued items plus the one which is active.
@@ -101,13 +105,13 @@ public:
     uint8_t getBits(uint8_t bits);
     void setPtr(const uint8_t *aAddress);
     void FIFOPushBack(const uint8_t *aAddress); // only sayQ() calls this
-    const uint8_t * FIFOPopFront(); // only sayISR() calls this
+    const uint8_t* FIFOPopFront(); // only sayISR() calls this
 
     volatile uint8_t free; // init on setup = FIFO_BUFFER_SIZE
 
 private:
     // FIFO queue for sayQ
-    const uint8_t * FIFOBuffer[FIFO_BUFFER_SIZE];
+    const uint8_t *FIFOBuffer[FIFO_BUFFER_SIZE];
     // not required to specify the next 2 variables as volatile, since it code using them is guarded with noInterrupts() and interrupts()
     uint8_t back; // index of last voice init on setup = 0
     uint8_t front; // index of next voice init on setup = 0
@@ -117,6 +121,9 @@ private:
 };
 
 /*
+ * Version 1.4.0
+ * - Adding parameter aSampleRateForPitch and macro ENABLE_PITCH.
+ *
  * Version 1.3.3
  * - Adding support for SAMD51 and ESP32 core 3.x.
  *

@@ -136,6 +136,8 @@ Modify them by enabling / disabling them, or change the values if applicable.
 |-|-:|-|-|
 | `NO_COMPATIBILITY_FOR_TONE_LIB_REQUIRED` | disabled | Talkie.h | If you do not use the Arduino Tone library, then activating can save up to 844 bytes program size. |
 | `FAST_8BIT_MODE` | disabled | Talkie.h | If defined we use 8bit instead of 16 bit coefficients K1 and K2. This saves 10 microseconds (40 instead of 50 us) for a 16 MHz ATmega and has almost the same quality, except of a few "dropouts" e.g. in the word "thousand". |
+| `ENABLE_PITCH` | disabled | Talkie.h | If defined we interprete second parameter `aSampleRateForPitch` of `say()` and `SayQ()`. This requires around 160 bytes of program space and few time consuming divisions. If disabled, the parameter `aSampleRateForPitch` is just ignored. |
+| `SAMPLE_RATE_DEFAULT` | 8000 | Talkie.h | f you want to globally set pitch for Talkie, you can change this value, this saves the overhead implied by activating `ENABLE_PITCH` |
 
 ### Changing include (*.h) files with Arduino IDE
 First, use *Sketch > Show Sketch Folder (Ctrl+K)*.<br/>
@@ -154,7 +156,13 @@ If you are using [Sloeber](https://eclipse.baeyens.it) as your IDE, you can easi
 # Schematic for voltmeter example
 ![Fritzing schematic for voltmeter example](https://github.com/ArminJo/Talkie/blob/master/extras/TalkieVoltmeter_Steckplatine.png)
 
+# Links
+Talkie implementation from 2017, based on Peter Knights version [extended with pitch, speed and bending](https://github.com/technologiescollege/ArduinoTechnoEduc/tree/master/portable/sketchbook/libraries/Talkietz).
+
 # Revision History
+### Version 1.4.0
+- Adding parameter `aSampleRateForPitch` and macro `ENABLE_PITCH`.
+
 ### Version 1.3.3
 - Adding support for SAMD51 and ESP32 core 3.x.
 

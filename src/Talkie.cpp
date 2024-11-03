@@ -55,7 +55,7 @@
  *
  *  The outputs can drive headphones directly, or add a simple audio amplifier to drive a loudspeaker.
  *
- *  Copyright (C) 2018-2021  Armin Joachimsmeyer
+ *  Copyright (C) 2018-2024  Armin Joachimsmeyer
  *  armin.joachimsmeyer@gmail.com
  *
  *  This file is part of Talkie https://github.com/ArminJo/Talkie.
@@ -92,7 +92,10 @@
 
 #include "TalkieLPC.h"
 
-#define SAMPLE_RATE 8000 // Speech engine sample rate
+#if defined(ENABLE_PITCH)
+unsigned int sSampleRateForPitch = SAMPLE_RATE_DEFAULT; // = 8000
+#endif
+#define ISR_CALLS_UNTIL_NEXT_DATA (25000/ (1000000 / ORIGINAL_SAMPLE_RATE) ) // gives 200 for 8000 -> 40 Hz or 25 ms Sample update frequency
 
 static uint8_t synthPeriod;
 static uint16_t synthEnergy;
@@ -108,8 +111,6 @@ static int16_t synthK1, synthK2;
 #  endif
 static int8_t synthK3, synthK4, synthK5, synthK6, synthK7, synthK8, synthK9, synthK10;
 #endif
-
-#define ISR_RATIO (25000/ (1000000 / SAMPLE_RATE) ) // gives 200 for SAMPLE_RATE 8000 -> 40 Hz or 25 ms Sample update frequency
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,7 +158,7 @@ HardwareTimer sTalkieSampleRateTimer(TIM2);
 static void setNextSynthesizerData();
 
 static Talkie *sPointerToTalkieForISR;
-#if ISR_RATIO < 255
+#if ISR_CALLS_UNTIL_NEXT_DATA < 255
 static uint8_t ISRCounterToNextData = 0;
 #else
 static uint16_t ISRCounterToNextData = 0;
@@ -272,8 +273,13 @@ void Talkie::initializeHardware() {
 #  if F_CPU <= 8000000L
     TIMSK0 = 0; // // Tweak for 8 MHz clock - must disable millis() interrupt
 #  endif
-    OCR1A = ((F_CPU + (SAMPLE_RATE / 2)) / SAMPLE_RATE) - 1;  // 'SAMPLE_RATE' Hz (w/rounding)
-    OCR1B = ((F_CPU + (SAMPLE_RATE / 2)) / SAMPLE_RATE) - 1;  // use the same value for register B
+#  if defined(ENABLE_PITCH)
+    OCR1A = ((F_CPU + (sSampleRateForPitch / 2)) / sSampleRateForPitch) - 1;  // 'sSampleRateForPitch' Hz (w/rounding)
+    OCR1B = ((F_CPU + (sSampleRateForPitch / 2)) / sSampleRateForPitch) - 1;// use the same value for register B
+#  else
+    OCR1A = ((F_CPU + (SAMPLE_RATE_DEFAULT / 2)) / SAMPLE_RATE_DEFAULT) - 1;  // 'SAMPLE_RATE_DEFAULT' Hz (w/rounding)
+    OCR1B = ((F_CPU + (SAMPLE_RATE_DEFAULT / 2)) / SAMPLE_RATE_DEFAULT) - 1;  // use the same value for register B
+#  endif
     TIMSK1 = _BV(OCIE1B); // enable compare register B match interrupt to use TIMER1_COMPB_vect and not interfere with the Servo library
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
@@ -291,7 +297,11 @@ void Talkie::initializeHardware() {
 #  endif
     analogWriteResolution(10); // 10-bit, 350 ksps Digital-to-Analog Converter (DAC)
     analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, 1 << 9); // DAC0
-    tcStart(SAMPLE_RATE);
+#  if defined(ENABLE_PITCH)
+    tcStart(sSampleRateForPitch);
+#  else
+    tcStart(SAMPLE_RATE_DEFAULT);
+#  endif
 
 #elif defined(TEENSYDUINO)
     // common for all Teensy
@@ -307,7 +317,11 @@ void Talkie::initializeHardware() {
 #define DAC_PIN A21 // Or A22
 #  endif // defined(__MKL26Z64__)
 
-    sIntervalTimer.begin(timerInterrupt, 1000000L / SAMPLE_RATE);
+#  if defined(ENABLE_PITCH)
+    sIntervalTimer.begin(timerInterrupt, 1000000L / sSampleRateForPitch);
+#  else
+    sIntervalTimer.begin(timerInterrupt, 1000000L / SAMPLE_RATE_DEFAULT);
+#  endif
 
 #  if defined(DAC_PIN)
 #define PWM_OUTPUT_FUNCTION(nextPwm) analogWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
@@ -319,10 +333,10 @@ void Talkie::initializeHardware() {
 
 #elif defined(ESP32)
 #  if !defined(ESP_ARDUINO_VERSION)
-#define ESP_ARDUINO_VERSION 0
+#define ESP_ARDUINO_VERSION 0x010101 // Version 1.1.1
 #  endif
 #  if !defined(ESP_ARDUINO_VERSION_VAL)
-#define ESP_ARDUINO_VERSION_VAL(major, minor, patch) 202
+#define ESP_ARDUINO_VERSION_VAL(major, minor, patch) ((major << 16) | (minor << 8) | (patch))
 #  endif
 
 #define DAC_PIN 25 // Or 26
@@ -333,11 +347,19 @@ void Talkie::initializeHardware() {
 #  if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)  // timerAlarm() enables it automatically
     sTalkieSampleRateTimer = timerBegin(1000000); // Only 1 parameter is required. 1000000 corresponds to 1 MHz / 1 uSec. After successful setup the timer will automatically start.
     timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt);
-    timerAlarm(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true, 0);   // 0 in the last parameter is repeat forever
+#    if defined(ENABLE_PITCH)
+    timerAlarm(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / sSampleRateForPitch, true, 0);   // 0 in the last parameter is repeat forever
+#    else
+    timerAlarm(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE_DEFAULT, true, 0);   // 0 in the last parameter is repeat forever
+#    endif
 #  else
     sTalkieSampleRateTimer = timerBegin(1, APB_FREQUENCY_DIVIDER, true);
     timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt, true);
-    timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE, true);
+#    if defined(ENABLE_PITCH)
+    timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / sSampleRateForPitch, true);
+#    else
+    timerAlarmWrite(sTalkieSampleRateTimer, (getApbFrequency() / APB_FREQUENCY_DIVIDER) / SAMPLE_RATE_DEFAULT, true);
+#    endif
 #  endif
 
     }
@@ -380,11 +402,15 @@ void Talkie::initializeHardware() {
     timer_generate_update(sTalkiePWMTimer); // Reset to start values
 
     /*
-     * Set timer for interrupts at SAMPLE_RATE
+     * Set timer for interrupts at SAMPLE_RATE_DEFAULT
      */
     sTalkieSampleRateTimer.setMode(TIMER_CH1, TIMER_OUTPUT_COMPARE);
     sTalkieSampleRateTimer.setPrescaleFactor(1);
-    sTalkieSampleRateTimer.setOverflow(F_CPU / SAMPLE_RATE);
+#  if defined(ENABLE_PITCH)
+    sTalkieSampleRateTimer.setOverflow(F_CPU / sSampleRateForPitch);
+#  else
+    sTalkieSampleRateTimer.setOverflow(F_CPU / SAMPLE_RATE_DEFAULT);
+#  endif
     sTalkieSampleRateTimer.attachInterrupt(TIMER_CH1, timerInterrupt);
     sTalkieSampleRateTimer.resume();  // Start timer
     sTalkieSampleRateTimer.refresh(); // Reset to start values
@@ -401,9 +427,13 @@ void Talkie::initializeHardware() {
     analogWriteFrequency(F_CPU / (1 << 10)); // 70312 10 bit at 72 MHz (70312.5)
 //    analogWriteFrequency(F_CPU / (1 << 8)); // 281250 8 bit at 72 MHz
     /*
-     * Set timer for interrupts at SAMPLE_RATE
+     * Set timer for interrupts at SAMPLE_RATE_DEFAULT
      */
-    sTalkieSampleRateTimer.setOverflow(1000000L / SAMPLE_RATE, MICROSEC_FORMAT);
+#  if defined(ENABLE_PITCH)
+    sTalkieSampleRateTimer.setOverflow(1000000L / sSampleRateForPitch, MICROSEC_FORMAT);
+#  else
+    sTalkieSampleRateTimer.setOverflow(1000000L / SAMPLE_RATE_DEFAULT, MICROSEC_FORMAT);
+#  endif
     sTalkieSampleRateTimer.attachInterrupt(timerInterrupt);
     sTalkieSampleRateTimer.resume();  // Start timer
     sTalkieSampleRateTimer.refresh(); // Reset to start values
@@ -459,7 +489,7 @@ void Talkie::terminateHardware() {
 #endif
     }
 
-    #elif defined(ARDUINO_ARCH_SAMD) // Zero
+#elif defined(ARDUINO_ARCH_SAMD) // Zero
     tcEnd();
 
 #elif defined(ESP32)
@@ -645,14 +675,11 @@ void Talkie::terminate() {
 /*
  * The blocking version
  */
-void Talkie::say(const uint8_t *aWordDataAddress) {
-    sayQ(aWordDataAddress);
+void Talkie::say(const uint8_t *aWordDataAddress, unsigned int aSampleRateForPitch) {
+    sayQ(aWordDataAddress, aSampleRateForPitch);
     wait();
 }
 
-/*
- * The blocking version
- */
 void Talkie::resetFIFO() {
     back = 0;
     front = 0;
@@ -702,7 +729,7 @@ void Talkie::digitalWriteNonInvertedOutput(uint8_t aValue) {
  * If stopped it starts the speech output.
  * if aWordDataAddress is 0 it just clears the queue.
  */
-int8_t Talkie::sayQ(const uint8_t *aWordDataAddress) {
+int8_t Talkie::sayQ(const uint8_t *aWordDataAddress, unsigned int aSampleRateForPitch) {
 
     if (aWordDataAddress == 0) {
         // Caller asked to have queue made empty and sound stopped
@@ -725,9 +752,14 @@ int8_t Talkie::sayQ(const uint8_t *aWordDataAddress) {
              * Word synthesizer inactive here -> START the word on this address
              */
             setPtr(aWordDataAddress);
-            ISRCounterToNextData = ISR_RATIO;
+            ISRCounterToNextData = ISR_CALLS_UNTIL_NEXT_DATA;
             setNextSynthesizerData();   // Initialize first data for ISR
             resetFIFO();
+#if defined(ENABLE_PITCH)
+            sSampleRateForPitch = aSampleRateForPitch;
+#else
+            (void) aSampleRateForPitch;
+#endif
             initializeHardware(); // sets isTalkingFlag to true;
         }
     }
@@ -892,7 +924,7 @@ void timerInterrupt() {
              */
             sPointerToTalkieForISR->terminateHardware();
         } else {
-            ISRCounterToNextData = ISR_RATIO;
+            ISRCounterToNextData = ISR_CALLS_UNTIL_NEXT_DATA;
             setNextSynthesizerData();
         }
     }
