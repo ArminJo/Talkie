@@ -121,6 +121,8 @@ private:
 };
 
 /*
+ * Version 1.4.1
+ *
  * Version 1.4.0
  * - Adding parameter aSampleRateForPitch and macro ENABLE_PITCH.
  *

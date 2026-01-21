@@ -1,25 +1,28 @@
 {
   "name": "Talkie",
+  "version": "1.4.0",
   "keywords": "Speech",
   "description": "Speech library for Arduino.",
+  "homepage": "https://github.com/ArminJo/Talkie",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ArminJo/Talkie"
+    "url": "https://github.com/ArminJo/Talkie.git"
   },
-  "version": "1.4.0",
-  "exclude": "pictures",
-  "authors": {
-    "name": "Armin Joachimsmeyer",
-    "email": "armin.arduino@gmail.com",
-    "maintainer": true
-  },
+  "authors" :
+  [
+     {
+       "name":"Armin Joachimsmeyer",
+       "email":"armin.arduino@gmail.com",
+       "maintainer": true
+     },
+     {
+       "name":"Peter Knight"
+     }
+  ],
   "license": "GPL-3.0-or-later",
   "frameworks": "arduino",
-  "platforms": [
-    "atmelavr",
-    "atmelmegaavr",
-    "atmelsam",
-    "espressif32",
-    "ststm32"
-  ]
+  "platforms": ["atmelavr", "atmelmegaavr", "atmelsam", "espressif8266", "espressif32", "ststm32"],
+  "headers": "IRRemote.hpp",
+  "examples": "examples/*/*.ino",
+  "export": {"exclude": [".github", "pictures"]}
 }

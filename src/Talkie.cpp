@@ -125,7 +125,7 @@ IntervalTimer sIntervalTimer;
 
 #elif  defined(ESP32)
 #include <driver/dac.h>
-static hw_timer_t *sTalkieSampleRateTimer = NULL;
+static hw_timer_t *sTalkieSampleRateTimer = nullptr;
 
 #elif defined(ARDUINO_ARCH_SAMD) // Zero
 static void tcStart(uint32_t sampleRate); // TC5
@@ -343,7 +343,7 @@ void Talkie::initializeHardware() {
 #define PWM_OUTPUT_FUNCTION(nextPwm) dacWrite(sPointerToTalkieForISR->NonInvertedOutputPin, nextPwm)
     // Use Timer1 with 1 microsecond resolution, main APB clock is 80MHZ
 #  define APB_FREQUENCY_DIVIDER 80
-    if(sTalkieSampleRateTimer == NULL) {
+    if(sTalkieSampleRateTimer == nullptr) {
 #  if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)  // timerAlarm() enables it automatically
     sTalkieSampleRateTimer = timerBegin(1000000); // Only 1 parameter is required. 1000000 corresponds to 1 MHz / 1 uSec. After successful setup the timer will automatically start.
     timerAttachInterrupt(sTalkieSampleRateTimer, timerInterrupt);
@@ -493,7 +493,7 @@ void Talkie::terminateHardware() {
     tcEnd();
 
 #elif defined(ESP32)
-    if(sTalkieSampleRateTimer != NULL) {
+    if(sTalkieSampleRateTimer != nullptr) {
 #    if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
         timerStop(sTalkieSampleRateTimer); // maybe timerEnd() is better, because it releases the hardware?
 #    else
@@ -606,7 +606,7 @@ uint8_t Talkie::getBits(uint8_t bits) {
 //uint8_t Talkie::getBits(uint8_t bits) {
 //    uint8_t value = 0;
 //    for (; bits; WordDataBit--, WordData >>= 1, bits--) {
-//        value <<= 1; // NULL on first pass
+//        value <<= 1; // 0 on first pass
 //        if (!WordDataBit) { // regular byte rollover junk...
 //            WordData = pgm_read_byte(WordDataPointer);
 //            WordDataPointer++;
