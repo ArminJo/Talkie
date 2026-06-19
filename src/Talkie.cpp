@@ -140,6 +140,7 @@ static void tcEnd();
 HardwareTimer sTalkieSampleRateTimer(3);
 timer_dev *sTalkiePWMTimer;
 uint8_t sTalkiePWMTimerChannel;
+uint8_t sTalkiePWMTimerChannelInv;
 
 #elif defined(STM32F1xx) || defined(ARDUINO_ARCH_STM32)
 #include <HardwareTimer.h> // 4 timers and 3. timer is used for tone(), 2. for Servo
@@ -386,8 +387,10 @@ void Talkie::initializeHardware() {
     // STM32F1 architecture for "Generic STM32F103C series" from "STM32F1 Boards (Arduino_STM32)" of Arduino Board manager
     // http://dan.drown.org/stm32duino/package_STM32duino_index.json
 #define DAC_PIN PA3      // T2C4 - If the STM has a built in DAC, better use its pin.
+#define INV_PIN PA2      // T2C3
 #define _10_BIT_OUTPUT
-#define PWM_OUTPUT_FUNCTION(nextPwm) timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannel, nextPwm)
+#define PWM_OUTPUT_FUNCTION(nextPwm) timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannel, nextPwm); \ 
+                                        if (sTalkiePWMTimerChannelInv) timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannelInv, nextPwm)
 
     /*
      * Prepare 10 bit PWM @ 72 MHz
@@ -398,6 +401,18 @@ void Talkie::initializeHardware() {
     timer_set_prescaler(sTalkiePWMTimer, 0); // set prescaler to 1
     timer_set_reload(sTalkiePWMTimer, (1 << 10) - 1); // setOverflow()
     timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannel, (1 << 9));
+    timer_set_mode(sTalkiePWMTimer, sTalkiePWMTimerChannel, TIMER_PWM );    
+    timer_oc_set_mode(sTalkiePWMTimer, sTalkiePWMTimerChannel, TIMER_OC_MODE_PWM_1, TIMER_OC_PE);
+    if (sPointerToTalkieForISR->InvertedOutputPin) {
+        sTalkiePWMTimerChannelInv = PIN_MAP[sPointerToTalkieForISR->InvertedOutputPin].timer_channel; // set timer channel according to pin
+        pinMode(sPointerToTalkieForISR->InvertedOutputPin, PWM); // this initializes the output pin and the timer mode
+        timer_set_compare(sTalkiePWMTimer, sTalkiePWMTimerChannelInv, (1 << 9));
+        timer_set_mode(sTalkiePWMTimer, sTalkiePWMTimerChannelInv, TIMER_PWM );    
+        timer_oc_set_mode(sTalkiePWMTimer, sTalkiePWMTimerChannelInv, TIMER_OC_MODE_PWM_2, TIMER_OC_PE);
+    }
+    else {
+        sTalkiePWMTimerChannelInv = 0;
+    }
     timer_resume(sTalkiePWMTimer);  // Start timer
     timer_generate_update(sTalkiePWMTimer); // Reset to start values
 
@@ -521,7 +536,11 @@ Talkie::Talkie() { // @suppress("Class members should be properly initialized")
 #else
     NonInvertedOutputPin = TALKIE_USE_PIN_FLAG;
 #endif
+#ifdef INV_PIN
+    InvertedOutputPin = INV_PIN;
+#else
     InvertedOutputPin = TALKIE_USE_PIN_FLAG;
+#endif
 
     isTalkingFlag = false;
     sPointerToTalkieForISR = this;
