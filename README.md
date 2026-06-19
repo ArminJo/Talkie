@@ -5,7 +5,7 @@ Speech library for Arduino
 
 [![Badge License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
  &nbsp; &nbsp; 
-[![Badge Version](https://img.shields.io/github/v/release/ArminJo/Talkie?include_prereleases&color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/Talkie/releases/latest)
+[![Badge Version](https://img.shields.io/github/v/release/ArminJo/Talkie?color=yellow&logo=DocuSign&logoColor=white)](https://github.com/ArminJo/Talkie/releases/latest)
  &nbsp; &nbsp; 
 [![Badge Commits since latest](https://img.shields.io/github/commits-since/ArminJo/Talkie/latest?color=yellow)](https://github.com/ArminJo/Talkie/commits/master)
  &nbsp; &nbsp; 
