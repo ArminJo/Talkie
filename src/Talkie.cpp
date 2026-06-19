@@ -46,7 +46,7 @@
  * Esplora      6/PD7       %           1           4
  * Zero (SAMD)  A0          %           TC5         A0/DAC0
  * ESP32        25          %           hw_timer_t  DAC0
- * BluePill     3           %           timer3      analogWrite Roger Clarks core
+ * BluePill     PA3         PA2         timer3      analogWrite Roger Clarks core
  * BluePill     PA3         %           timer4      analogWrite STM core
  * Teensy       12/14721    %         IntervalTimer analogWrite
  *
